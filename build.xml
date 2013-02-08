@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="eix" default="build" basedir="." description="Eix">
+	<property name="testDir" value="test" />
+	<property name="testClassesDir" value="${testDir}/php" />
+	<property name="srcDir" value="src/php/main" />
+	<property name="buildDir" value="build" />
+	<property name="reportsDir" value="${buildDir}/reports" />
+	<property name="classesDir" value="${buildDir}/classes" />
+
+	<fileset dir="${srcDir}" id="source">
+		<include name="**/*.php" />
+	</fileset>
+
+	<target name="clean">
+		<delete dir="${buildDir}" />
+		<delete dir="${reportsDir}" />
+	</target>
+
+	<target name="prepare" depends="clean">
+		<mkdir dir="${buildDir}" />
+		<mkdir dir="${reportsDir}" />
+	</target>
+
+	<target name="check" depends="prepare">
+		<phpcodesniffer
+			standard="PSR2"
+			format="full"
+			file="${srcDir}"
+			verbosity="1"
+			docFile="${reportsDir}/codesniffer.log"
+			allowedFileExtensions="php js css html"
+		/>
+	</target>
+
+	<target name="test">
+		<phpunit
+			configuration="${testDir}/phpunit.xml"
+			printsummary="true"
+		>
+			<batchtest>
+				<fileset dir="${testClassesDir}">
+					<include name="**/*Test.php"/>
+				</fileset>
+			</batchtest>
+		</phpunit>
+	</target>
+
+<!--
+	<target name="package" depends="test">
+-->
+	<target name="package" depends="prepare">
+		<tstamp>
+			<format property="creationDate" pattern="%Y-%m-%d %H:%I:%S" />
+			<format property="currentYear" pattern="%Y" />
+			<format property="buildDate" pattern="%s" />
+		</tstamp>
+
+		<mkdir dir="${classesDir}" />
+		<copy todir="${classesDir}">
+			<fileset refid="source" />
+<!--
+			<filterchain>
+				<stripphpcomments />
+				<stripwhitespace />
+				<tabtospaces tablength="1" />
+			</filterchain>
+-->
+		</copy>
+
+		<pharpackage
+			destfile="${buildDir}/eix.phar"
+			basedir="${classesDir}"
+			stub="${classesDir}/phar_stub.php"
+			signature="sha512"
+		>
+			<fileset dir="${classesDir}">
+				<include name="**/*" />
+			</fileset>
+
+			<metadata>
+				<element name="title" value="Eix" />
+				<element name="description" value="Eix is a PHP-based framework for building web applications." />
+				<element name="version" value="0.1.0" />
+				<element name="build" value="${buildDate}" />
+				<element name="created" value="${creationDate}" />
+				<element name="copyright" value="Nohex (c) 2012-${currentYear}" />
+				<element name="authors">
+					<element name="Max Noé">
+						<element name="e-mail" value="max@nohex.com" />
+					</element>
+				</element>
+			</metadata>
+		</pharpackage>
+	</target>
+
+	<target name="build" depends="clean, prepare, test, package" />
+</project>
