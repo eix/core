@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="eix" default="build" basedir="." description="Eix">
+<project name="eix" default="build" description="Eix">
 	<property name="testDir" value="test" />
 	<property name="testClassesDir" value="${testDir}/php" />
 	<property name="srcDir" value="src/php/main" />
