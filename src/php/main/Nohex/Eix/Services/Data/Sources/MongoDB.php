@@ -34,11 +34,12 @@ class MongoDB implements DataSource
     {
         if (empty(self::$connector)) {
             // If there is no Mongo connector, raise a new one.
-            self::$connector = new \Mongo(sprintf('mongodb://%s:%s@%s',
-                $settings->user,
-                $settings->password,
-                $settings->host,
-                $settings->port
+            self::$connector = new \Mongo(
+                sprintf('mongodb://%s:%s@%s:%d',
+                    $settings->user,
+                    $settings->password,
+                    $settings->host,
+                    $settings->port
                 ),
                 array(
                     'db' => $settings->databaseName,
