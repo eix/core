@@ -1,11 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="eix" default="build" description="Eix">
+
 	<property name="testDir" value="test" />
 	<property name="testClassesDir" value="${testDir}/php" />
 	<property name="srcDir" value="src/php/main" />
 	<property name="buildDir" value="build" />
 	<property name="reportsDir" value="${buildDir}/reports" />
 	<property name="classesDir" value="${buildDir}/classes" />
+	<property name="deployLocation" value="/usr/share/php" />
+
+	<property name="version" value="0.1.1" />
+	<property name="distFile" value="${buildDir}/${phing.project.name}-${version}.phar" />
 
 	<fileset dir="${srcDir}" id="source">
 		<include name="**/*.php" />
@@ -45,10 +50,11 @@
 		</phpunit>
 	</target>
 
-<!--
-	<target name="package" depends="test">
--->
-	<target name="package" depends="prepare">
+	<target
+		name="build"
+		depends="clean, prepare, test"
+		description="Pack up the library so that it can be distributed."
+	>
 		<tstamp>
 			<format property="creationDate" pattern="%Y-%m-%d %H:%I:%S" />
 			<format property="currentYear" pattern="%Y" />
@@ -58,7 +64,7 @@
 		<mkdir dir="${classesDir}" />
 		<copy todir="${classesDir}">
 			<fileset refid="source" />
-<!--
+<!-- One of these filters breaks the build.
 			<filterchain>
 				<stripphpcomments />
 				<stripwhitespace />
@@ -68,7 +74,7 @@
 		</copy>
 
 		<pharpackage
-			destfile="${buildDir}/eix.phar"
+			destfile="${distFile}"
 			basedir="${classesDir}"
 			stub="${classesDir}/phar_stub.php"
 			signature="sha512"
@@ -80,7 +86,7 @@
 			<metadata>
 				<element name="title" value="Eix" />
 				<element name="description" value="Eix is a PHP-based framework for building web applications." />
-				<element name="version" value="0.1.0" />
+				<element name="version" value="${version}" />
 				<element name="build" value="${buildDate}" />
 				<element name="created" value="${creationDate}" />
 				<element name="copyright" value="Nohex (c) 2012-${currentYear}" />
@@ -93,5 +99,11 @@
 		</pharpackage>
 	</target>
 
-	<target name="build" depends="clean, prepare, test, package" />
+	<target
+		name="deploy"
+		depends="build"
+		description="Leave the distribution file in a place where it can be used."
+	>
+		<copy file="${distFile}" todir="${deployLocation}" />
+	</target>
 </project>
