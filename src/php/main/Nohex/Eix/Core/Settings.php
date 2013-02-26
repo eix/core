@@ -33,7 +33,7 @@ class Settings
                     if (PHP_SAPI == 'cli') {
                         $this->environment = 'cli';
                     } else {
-                        $this->environment = @$_SERVER['SERVER_ENV'];
+                        $this->environment = getenv('EIX_ENV');
                     }
                 }
 

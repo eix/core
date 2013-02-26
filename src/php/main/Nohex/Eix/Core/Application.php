@@ -50,18 +50,8 @@ abstract class Application
         Logger::set(new Logger('eix'));
         Logger::get()->debug('Starting Eix application...');
 
-        if (!defined('DEBUG')) {
-            define('DEBUG', @$_SERVER['SERVER_ENV'] == 'DEV');
-        }
-
-        if (!defined('TEST')) {
-            define('TEST', @$_SERVER['SERVER_ENV'] == 'TEST');
-        }
-
         // Divert PHP errors to custom handlers.
-        if (!DEBUG && !TEST) {
-            set_error_handler(array($this, 'handleError'));
-        }
+        set_error_handler(array($this, 'handleError'));
         set_exception_handler(array($this, 'handleException'));
 
         try {
