@@ -9,21 +9,16 @@
 	<property name="classesDir" value="${buildDir}/classes" />
 	<property name="deployLocation" value="/usr/share/php" />
 
-	<property name="version" value="0.1.1" />
+	<property name="version" value="0.1.2" />
 	<property name="distFile" value="${buildDir}/${phing.project.name}-${version}.phar" />
 
 	<fileset dir="${srcDir}" id="source">
 		<include name="**/*.php" />
 	</fileset>
 
-	<target name="clean">
-		<delete dir="${buildDir}" />
-		<delete dir="${reportsDir}" />
-	</target>
-
-	<target name="prepare" depends="clean">
+	<target name="prepare">
 		<mkdir dir="${buildDir}" />
-		<mkdir dir="${reportsDir}" />
+		<delete dir="${buildDir}/*" />
 	</target>
 
 	<target name="check" depends="prepare">
@@ -31,13 +26,12 @@
 			standard="PSR2"
 			format="full"
 			file="${srcDir}"
-			verbosity="1"
 			docFile="${reportsDir}/codesniffer.log"
 			allowedFileExtensions="php js css html"
 		/>
 	</target>
 
-	<target name="test">
+	<target name="test" depends="check">
 		<phpunit
 			configuration="${testDir}/phpunit.xml"
 			printsummary="true"
@@ -52,15 +46,9 @@
 
 	<target
 		name="build"
-		depends="clean, prepare, test"
+		depends="test"
 		description="Pack up the library so that it can be distributed."
 	>
-		<tstamp>
-			<format property="creationDate" pattern="%Y-%m-%d %H:%I:%S" />
-			<format property="currentYear" pattern="%Y" />
-			<format property="buildDate" pattern="%s" />
-		</tstamp>
-
 		<mkdir dir="${classesDir}" />
 		<copy todir="${classesDir}">
 			<fileset refid="source" />
@@ -72,6 +60,14 @@
 			</filterchain>
 -->
 		</copy>
+	</target>
+
+	<target name="package" depends="build">
+		<tstamp>
+			<format property="creationDate" pattern="%Y-%m-%d %H:%I:%S" />
+			<format property="currentYear" pattern="%Y" />
+			<format property="buildDate" pattern="%s" />
+		</tstamp>
 
 		<pharpackage
 			destfile="${distFile}"
@@ -101,7 +97,7 @@
 
 	<target
 		name="deploy"
-		depends="build"
+		depends="package"
 		description="Leave the distribution file in a place where it can be used."
 	>
 		<copy file="${distFile}" todir="${deployLocation}" />
