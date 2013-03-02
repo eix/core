@@ -2,7 +2,7 @@ The MIT License
 ===============
 
 Copyright (c) 2005-2013 Nohex (eix@nohex.com)
--------------------------------------------------------
+---------------------------------------------
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
