@@ -2,7 +2,7 @@
 <phpunit
 	backupGlobals="true"
 	backupStaticAttributes="false"
-	bootstrap="php/bootstrap.php"
+	bootstrap="src/php/test_bootstrap.php"
 	cacheTokens="false"
 	colors="true"
 	convertErrorsToExceptions="true"
@@ -20,14 +20,14 @@
 >
 	<testsuites>
 		<testsuite name="Full test suite">
-			<directory>test/src/*Test.php</directory>
+			<directory>src/php/test/*Test.php</directory>
 		</testsuite>
 	</testsuites>
 
 	<logging>
 		<log
 			type="coverage-html"
-			target="../build/reports/phpunit"
+			target="build/reports/phpunit"
 			charset="UTF-8"
 			highlight="true"
 			lowUpperBound="35"

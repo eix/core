@@ -9,21 +9,12 @@ namespace Nohex\Eix\Core;
 class ClassLoader
 {
     /**
-     * Set up some autoloaders that can deal with Eix classes.
-     */
-    public static function init()
-    {
-        // Add an autoloader for Eix classes.
-        // Assuming the ClassLoader is in the Nohex\Eix\Core namespace, the root is
-        // exactly three folders up.
-        self::addClassPath(__DIR__ . '/../../../');
-    }
-
-    /**
      * Set up an autoloader for classes under the specified path.
      * @param string $classPath the path that holds the classes.
+     * @param boolean $failIfMissing whether the routine should fail if an
+     * unreadable path is being added.
      */
-    public static function addClassPath($classPath)
+    public static function addClassPath($classPath, $failIfMissing = true)
     {
         if (is_readable($classPath)) {
             /**
@@ -37,7 +28,7 @@ class ClassLoader
                 $classFile = $classPath . '/' . strtr($class, '_\\', '//') . '.php';
                 if (file_exists($classFile)) require $classFile;
             });
-        } else {
+        } elseif ($failIfMissing) {
             throw new \Exception(sprintf(
                 'Class path %s is not accessible.',
                 $classPath
