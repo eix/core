@@ -1,0 +1,31 @@
+{
+	"application": {
+		"id": "mock",
+		"name": "Mock application",
+		"salt": "123"
+	},
+	"locale": {
+		"default": "en"
+	},
+	"resources": {
+		"templates": {
+			"response": "test/resources/response.xml"
+		},
+		"pages": {
+			"location": "test/resources/pages/"
+		}
+	},
+	"data": {
+		"sources": {
+			"http": "http://eix.nohex.com/data/source",
+			"imageStore": {
+				"locations": {
+					"test": "/tmp"
+				}
+			},
+			"mongodb": {
+				"databaseName": "test"
+			}
+		}
+	}
+}

@@ -9,7 +9,7 @@ class SettingsTest extends \PHPUnit_Framework_TestCase
     public function testDefaultConstructor()
     {
         // Should complain about a non-available settings file.
-        $settings = new Settings('test/resources/');
+        $settings = new Settings('data/resources/test/');
 
         $this->assertEquals($settings->application->id, 'mock');
     }

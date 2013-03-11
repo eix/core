@@ -10,7 +10,7 @@ class MockApplication extends Application
     public function __construct(Settings $settings = null)
     {
         // Customise settings.
-        $settings = new Settings('test/resources/');
+        $settings = new Settings('data/resources/test/');
 
         parent::__construct($settings);
     }
