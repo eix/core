@@ -100,8 +100,6 @@ class Settings
             return $this->settings->$key;
         } else {
             if ($failOnMissing) {
-var_dump($this->settings);
-die;
                 throw new Settings\Exception("Could not find a setting identified by '$key'.");
             } else {
                 return $default;
