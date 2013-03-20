@@ -126,10 +126,11 @@ abstract class Entity
     }
 
     /**
-     * Sets the data source. This function is called from getDataSource() so
-     * that a data source be available when it is needed, but not until it is.
+     * Obtains the data source that this entity uses if none other has been set.
+     * This function is called from getDataSource() so that a data source is
+     * available when it is needed, but not until it is.
      */
-    abstract protected function assignDataSource();
+    abstract protected function getDefaultDataSource();
 
     /**
      * Returns the set of properties that need to be kept when the object is

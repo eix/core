@@ -4,6 +4,7 @@ namespace Nohex\Eix\Services\Data;
 
 use Nohex\Eix\Services\Log\Logger;
 use Nohex\Eix\Services\Net\Http\NotFoundException;
+use Nohex\Eix\Services\Data\Source as DataSource;
 
 /**
  * Provides means to manage a collection of Entity objects.
@@ -42,15 +43,33 @@ abstract class Factory
     }
 
     /**
-     * This function must be overridden to assign the data source.
+     * This function must be overridden to return the data source the factory
+     * will use under normal conditions.
      */
-    abstract protected function assignDataSource();
+    abstract protected function getDefaultDataSource();
 
+    /**
+     * Allows setting a data source other than the default one.
+     * 
+     * @param Nohex\Eix\Services\Data\Source $dataSource The data source to
+     * assign. 
+     */
+    public function setDataSource(DataSource $dataSource)
+    {
+        $this->dataSource = $dataSource;
+    }
+
+    /**
+     * Returns the data source this factory is fed from.
+     *
+     * @param  string $id the entity's ID.
+     * @return \Nohex\Eix\Services\Data\entitiesClassName
+     */
     public function getDataSource()
     {
         if (empty($this->dataSource)) {
-            // Assign the data source, now that one is needed.
-            $this->assignDataSource();
+            // Assign the default data source, now that one is needed.
+            $this->dataSource = $this->getDefaultDataSource();
             // If, after assigning the data source, there is still nothing in
             // the property, then fail.
             if (empty($this->dataSource)) {

@@ -23,9 +23,9 @@ class Users extends \Nohex\Eix\Services\Data\Factory
     protected static $current;
     protected static $cookieName;
 
-    protected function assignDataSource()
+    protected function getDefaultDataSource()
     {
-        $this->dataSource = DataSource::getInstance(static::COLLECTION);
+        return DataSource::getInstance(static::COLLECTION);
     }
 
     /**

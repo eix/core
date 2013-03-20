@@ -7,8 +7,8 @@ use Nohex\Eix\Services\Data\Sources\Mock as MockDataSource;
 
 class Mock extends Factory
 {
-    protected function assignDataSource()
+    protected function getDefaultDataSource()
     {
-        $this->dataSource = MockDataSource::getInstance();
+        return MockDataSource::getInstance();
     }
 }

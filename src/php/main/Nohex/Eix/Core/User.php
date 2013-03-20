@@ -5,13 +5,14 @@
 
 namespace Nohex\Eix\Core;
 
-use Nohex\Eix\Services\Log\Logger;
+use Nohex\Eix\Services\Data\Entity;
 use Nohex\Eix\Services\Data\Sources\MongoDB as DataSource;
+use Nohex\Eix\Services\Identity\Provider as IdentityProvider;
+use Nohex\Eix\Services\Log\Logger;
 use Nohex\Eix\Services\Net\Http\NotAuthorisedException;
 use Nohex\Eix\Services\Net\Http\NotAuthenticatedException;
-use Nohex\Eix\Services\Identity\Provider as IdentityProvider;
 
-class User extends \Nohex\Eix\Services\Data\Entity
+class User extends Entity
 {
     const COLLECTION = 'users';
 
@@ -61,9 +62,9 @@ class User extends \Nohex\Eix\Services\Data\Entity
         $this->lastSeen = new \DateTime;
     }
 
-    protected function assignDataSource()
+    protected function getDefaultDataSource()
     {
-        $this->dataSource = DataSource::getInstance(static::COLLECTION);
+        return DataSource::getInstance(static::COLLECTION);
     }
 
     protected function getFactory()

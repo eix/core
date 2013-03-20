@@ -10,7 +10,7 @@ abstract class Subentity extends Entity
     /**
      * Sub-entities are not persistable by themselves
      */
-    protected function assignDataSource()
+    protected function getDefaultDataSource()
     {
         throw new \RuntimeException('Subentities cannot be stored independently');
     }
