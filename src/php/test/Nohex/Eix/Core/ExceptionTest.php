@@ -1,12 +1,12 @@
 <?php
-/**
- * Unit test for class Nohex\Eix\Core\Exception.
- */
 
 namespace Nohex\Eix\Core;
 
 use Nohex\Eix\Core\Exception;
 
+/**
+ * Unit test for class Nohex\Eix\Core\Exception.
+ */
 class ExceptionTest extends \PHPUnit_Framework_TestCase
 {
     const MESSAGE = 'message';
