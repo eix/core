@@ -51,8 +51,10 @@ abstract class Application
         Logger::get()->debug('Starting Eix application...');
 
         // Divert PHP errors to custom handlers.
-        set_error_handler(array($this, 'handleError'));
-        set_exception_handler(array($this, 'handleException'));
+        if (@$settings->application->rawErrors !== 'on') {
+            set_error_handler(array($this, 'handleError'));
+            set_exception_handler(array($this, 'handleException'));
+        }
 
         try {
             // Load the application's settings.
@@ -163,7 +165,7 @@ abstract class Application
      * This function should be overridden in descendant classes to provide
      * application-wide response alterations.
      */
-    protected function alterResponse(Response &$response)
+    public function alterResponse(Response &$response)
     {
         // Do nothing.
     }
