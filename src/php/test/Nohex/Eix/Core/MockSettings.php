@@ -1,14 +1,14 @@
 <?php
 
-namespace Nohex\Eix\Core\Settings;
+namespace Nohex\Eix\Core;
 
 use Nohex\Eix\Core\Settings;
 
 /**
  * Provides application settings for testing purposes.
  */
-class MockSettings extends Settings {
-
+class MockSettings extends Settings
+{
     public static $defaultSettings = array(
         'application' => array(
             'id' => 'mock',
@@ -20,10 +20,10 @@ class MockSettings extends Settings {
         ),
         'resources' => array(
             'templates' => array(
-                'response' => 'test/resources/response.xml',
+                'response' => 'data/resources/test/response.xml',
             ),
             'pages' => array(
-                'location' => 'test/resources/pages/',
+                'location' => 'data/resources/test/pages/',
             ),
         ),
         'data' => array(

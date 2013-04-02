@@ -14,7 +14,7 @@ class Settings
      *
      * @param mixed $source a location where settings can be loaded, or an
      * object or array with settings.
-     * @param string $environment 
+     * @param string $environment
      */
     public function __construct($source = null, $environment = null)
     {
@@ -49,7 +49,8 @@ class Settings
      *
      * @param string $source The location of the settings file.
      */
-    private function loadFromFile($location) {
+    private function loadFromFile($location)
+    {
         Logger::get()->debug('Loading settings...');
         if (empty($location)) {
             // The default settings script is in the 'environment' folder of the
