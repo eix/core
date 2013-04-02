@@ -22,6 +22,8 @@ class Http implements \Nohex\Eix\Core\Request
     private $parameters = null;
     private $httpParameters = array();
 
+    private static $defaultRoutes;
+
     public function __construct()
     {
         // Constructor left here so that it can be overriden.
@@ -230,12 +232,7 @@ class Http implements \Nohex\Eix\Core\Request
     {
         // Default configuration file is in environment/routes.json.
         if (empty($this->routes)) {
-            if (is_readable(self::DEFAULT_ROUTES_FILE_LOCATION)) {
-                $this->routes = json_decode(
-                    file_get_contents(self::DEFAULT_ROUTES_FILE_LOCATION),
-                    true
-                );
-            }
+            $this->routes = self::getDefaultRoutes();
 
             if (empty($this->routes)) {
                 throw new Exception('No routes could be obtained. Please check the route configuration file.');
@@ -243,6 +240,14 @@ class Http implements \Nohex\Eix\Core\Request
         }
 
         return $this->routes;
+    }
+
+    /**
+     * Set the routing table.
+     */
+    public function setRoutes($routes)
+    {
+        $this->routes = $routes;
     }
 
     /**
@@ -301,4 +306,29 @@ class Http implements \Nohex\Eix\Core\Request
     {
         return $_SERVER['REQUEST_URI'];
     }
+
+    /**
+     * Gets the default routes, loading them up from a file if need be.
+     */
+    public static function getDefaultRoutes() {
+        if (empty(self::$defaultRoutes)) {
+            if (is_readable(self::DEFAULT_ROUTES_FILE_LOCATION)) {
+                self::$defaultRoutes = json_decode(
+                    file_get_contents(self::DEFAULT_ROUTES_FILE_LOCATION),
+                    true
+                );
+            }
+        }
+
+        return self::$defaultRoutes;
+    }
+
+    /**
+     * Set the routes that will be used if none other are loaded.
+     */
+    public static function setDefaultRoutes($defaultRoutes) {
+        self::$defaultRoutes = $defaultRoutes;
+    }
+
+    
 }
