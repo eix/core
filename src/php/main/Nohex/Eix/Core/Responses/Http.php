@@ -7,11 +7,11 @@
 namespace Nohex\Eix\Core\Responses;
 
 use Nohex\Eix\Services\Log\Logger;
-use Nohex\Eix\Core\Response;
+use Nohex\Eix\Core\Responses\Data as DataResponse;
 use Nohex\Eix\Core\Requests\Http as HttpRequest;
 use Nohex\Eix\Services\Net\Http as HttpClient;
 
-abstract class Http implements Response
+abstract class Http extends DataResponse
 {
     const STATUS_NOTICE = 'notice';
     const STATUS_WARNING = 'warning';
@@ -21,7 +21,6 @@ abstract class Http implements Response
     private $request;
     private $contentType;
     private $encoding = 'UTF-8';
-    private $data;
     private $headers = array();
 
     public function __construct(HttpRequest $request = null)
@@ -52,41 +51,6 @@ abstract class Http implements Response
             HttpClient::getStatusCodeMessage($this->status)
         );
         header('Status: ' . $statusMessage);
-    }
-
-    /**
-     * Stores the response data in a key-value fashion.
-     *
-     * @param string $key   the key under which the data is stored.
-     * @param mixed  $value the data.
-     */
-    public function setData($key, $value)
-    {
-        $this->data[$key] = $value;
-    }
-
-    /**
-     * Stores the response data in a key-value fashion, adding the data to the
-     * existing set.
-     *
-     * @param string $key   the key under which the data is stored.
-     * @param mixed  $value the data.
-     */
-    public function addData($key, $value)
-    {
-        if (isset($this->data[$key])) {
-            $this->data[$key] = array_merge_recursive(
-                $this->data[$key],
-                $value
-            );
-        } else {
-            $this->setData($key, $value);
-        }
-    }
-
-    protected function getData()
-    {
-        return $this->data;
     }
 
     public function getRequest()
