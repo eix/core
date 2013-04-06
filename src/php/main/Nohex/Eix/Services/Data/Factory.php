@@ -50,9 +50,9 @@ abstract class Factory
 
     /**
      * Allows setting a data source other than the default one.
-     * 
+     *
      * @param Nohex\Eix\Services\Data\Source $dataSource The data source to
-     * assign. 
+     * assign.
      */
     public function setDataSource(DataSource $dataSource)
     {
@@ -62,7 +62,7 @@ abstract class Factory
     /**
      * Returns the data source this factory is fed from.
      *
-     * @param  string $id the entity's ID.
+     * @param  string                                     $id the entity's ID.
      * @return \Nohex\Eix\Services\Data\entitiesClassName
      */
     public function getDataSource()
@@ -91,7 +91,6 @@ abstract class Factory
         // static:: doesn't quite work, so all entities are stored in Factory.
         return @self::$entities[get_called_class()][$id];
     }
-
 
     /**
      * Returns the entity identified by the ID, retrieving it from the
@@ -168,6 +167,7 @@ abstract class Factory
     public function getAll($filter = null)
     {
         $className = static::ENTITIES_CLASS_NAME;
+
         $results = $this->getDataSource()->retrieveAll($filter);
 
         // Convert the resulting data to entities.

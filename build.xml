@@ -1,136 +1,200 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project default="package">
+<project default="build">
+	<!-- Phing build script for libraries -->
 
+	<!-- Set common properties -->
+	<property name="repository" value="/mnt/workspace/nohex-repository" />
 	<property name="srcDir" value="src/php" />
 	<property name="mainSrcDir" value="${srcDir}/main" />
-	<property name="testsDir" value="${srcDir}/test" />
-	<property name="libsDir" value="${srcDir}/lib" />
+	<property name="testDir" value="${srcDir}/test" />
+	<property name="libDir" value="${srcDir}/lib" />
 	<property name="buildDir" value="build" />
-	<property name="mainTargetDir" value="${buildDir}/target/main" />
-	<property name="develTargetDir" value="${buildDir}/target/devel" />
+	<property name="reportsDir" value="${buildDir}/reports" />
+	<property name="targetsDir" value="${buildDir}/targets" />
 	<property name="distFileName" value="${phing.project.name}-${version}" />
-	<!-- Import custom properties -->
-	<property file="build.properties" />
+	<property name="distFileType" value="phar" />
 
-	<fileset dir="${srcDir}" id="main">
+	<!-- Import custom properties -->
+	<property file="phing.properties" />
+
+	<!-- Define project file locations and sets -->
+
+	<fileset dir="${srcDir}" id="phpFiles">
+		<include name="**/*.php" />
+	</fileset>
+
+	<fileset dir="${srcDir}" id="bootstrap">
 		<include name="bootstrap.php" />
 		<include name="phar_stub.php" />
-		<include name="**/*.php" />
 	</fileset>
 
-	<fileset dir="${srcDir}" id="tests">
-		<include name="test_bootstrap.php" />
-		<include name="tests/**/*.php" />
+	<fileset dir="${srcDir}" id="main">
+		<include name="main/**/*.php" />
 	</fileset>
 
-	<fileset dir="${libsDir}" id="libs">
-		<include name="**/*.php" />
-		<!-- Phars are never packaged inside phars. -->
-		<exclude name="**/*.phar" />
+	<fileset dir="${srcDir}" id="devel">
+		<include name="test/**/*.php" />
 	</fileset>
 
-	<target name="prepare">
-		<!-- Ensure the build folder is clean -->
-		<delete dir="${buildDir}" />
-		<!-- Ensure the build folder exists -->
-		<mkdir dir="${buildDir}" />
+	<fileset dir="${libDir}" id="lib">
+		<include name="**.php" />
+		<!-- Phars can't have phars within them -->
+		<exclude name="**.phar" />
+	</fileset>
+
+	<!-- Targets -->
+
+	<target name="getlibs"
+		description="Bring in all reported dependencies"
+	>
+		<!-- If there are dependencies, bring them in. -->
+		<if>
+			<isset property="libraries" />
+			<then>
+				<foreach list="${libraries}" param="library" target="getlib" />
+			</then>
+		</if>
+	</target>
+
+	<target name="getlib"
+		description="Get a library from the repository"
+	>
+		<copy file="${repository}/${library}.phar" todir="${libDir}" />
 	</target>
 
 	<target name="check"
-		depends="prepare"
 		description="Ensure code quality"
+		depends="getlibs"
 	>
+		<mkdir dir="${reportsDir}" />
+
+<!--
 		<phpcodesniffer
 			standard="PSR2"
 			format="full"
-			file="${srcDir}"
 			docFile="${reportsDir}/codesniffer.log"
 			allowedFileExtensions="php js css html"
-		/>
+		>
+			<fileset refid="phpFiles" />
+		</phpcodesniffer>
+-->
+
+		<!-- Measure project size using PHPLOC -->
+		<exec executable="phploc" checkreturn="true" level="debug">
+			<arg value="--log-csv"/>
+			<arg value="${reportsDir}/phploc.csv"/>
+			<arg path="${srcDir}"/>
+		</exec>
+ 
+		<!-- Calculate software metrics using PHP_Depend -->
+		<phpdepend>
+			<fileset refid="main" />
+			<logger type="jdepend-xml" outfile="${reportsDir}/phpdepend.xml"/>
+			<logger type="summary-xml" outfile="${reportsDir}/phpdepend-summary.xml"/>
+			<logger type="jdepend-chart" outfile="${reportsDir}/dependencies.svg"/>
+			<logger type="overview-pyramid" outfile="${reportsDir}/overview-pyramid.svg"/>
+		</phpdepend>
+ 
+		<!-- Perform project mess detection using PHPMD -->
+		<phpmd rulesets="codesize,design,naming,unusedcode">
+			<fileset refid="phpFiles"/>
+			<formatter type="xml" outfile="${reportsDir}/pmd.xml"/>
+		</phpmd>
+
+		<!-- Check for duplicate code -->
+		<phpcpd minLines="10" minTokens="20">
+			<fileset refid="phpFiles"/>
+			<formatter type="pmd" outfile="${reportsDir}/pmd-cpd.xml"/>
+		</phpcpd>
+	
+		<!-- Aggregate tool output with PHP_CodeBrowser -->
+		<mkdir dir="${reportsDir}/cb" />
+		<exec executable="phpcb" logoutput="true" checkreturn="true" level="debug">
+			<arg value="--log"/>
+			<arg path="${reportsDir}"/>
+			<arg value="--source"/>
+			<arg path="${srcDir}"/>
+			<arg value="--output"/>
+			<arg path="${reportsDir}/cb"/>
+		</exec>
 	</target>
 
 	<target name="test"
-		depends="prepare"
-		description="Ensure the functionality meets expectations"
+		description="Run unit tests"
+		depends="check"
 	>
 		<phpunit
 			configuration="phpunit.xml"
 			printsummary="true"
 		>
 			<batchtest>
-				<fileset dir="${testsDir}">
+				<fileset dir="${testDir}">
 					<include name="**/*Test.php"/>
 				</fileset>
 			</batchtest>
 		</phpunit>
 	</target>
 
-<!--
--->
-	<target name="build"
-		description="Gather the files that make up a package"
-		depends="test"
+	<target name="clean"
+		description="Prepare the build environment"
 	>
-		<!-- Prepare main target folder. -->
-		<delete dir="${mainTargetDir}" />
-		<mkdir dir="${mainTargetDir}" />
-		<copy todir="${mainTargetDir}">
-			<fileset refid="main" />
-		</copy>
-
-		<!-- Prepare development target folder. -->
-		<delete dir="${develTargetDir}" />
-		<mkdir dir="${develTargetDir}" />
-		<copy todir="${develTargetDir}">
-			<fileset refid="main" />
-			<fileset refid="tests" />
-		</copy>
+		<!-- Ensure the build folder is clean -->
+		<delete dir="${buildDir}" />
+		<!-- Ensure the build folder exists -->
+		<mkdir dir="${buildDir}" />
 	</target>
 
-	<target name="package"
-		depends="build"
-		description="Build a distributable package"
+	<target name="build"
+		description="Wrapper for the _build target"
+		depends="clean,test"
 	>
-		<tstamp>
-			<format property="creationDate" pattern="%Y-%m-%d %H:%I:%S" />
-			<format property="currentYear" pattern="%Y" />
-			<format property="buildDate" pattern="%s" />
-		</tstamp>
+		<if>
+			<isset property="type" />
+			<then>
+				<phingcall target="_build" />
+			</then>
+			<else>
+				<foreach list="main,devel" param="type" target="_build" />
+			</else>
+		</if>
+	</target>
 
-		<!-- Build a phar with the main code -->
-		<pharpackage
-			destfile="${buildDir}/${distFileName}.phar"
-			basedir="${mainTargetDir}"
-			stub="${mainTargetDir}/phar_stub.php"
-			signature="sha512"
-		>
-			<fileset dir="${mainTargetDir}">
-				<include name="**/*" />
-			</fileset>
+	<target name="_build"
+		description="Lay out the library files and package them"
+	>
+		<fail unless="type" msg="No library type is set." />
 
-			<metadata>
-				<element name="title" value="${phing.project.name}" />
-				<element name="description" value="${phing.project.description}" />
-				<element name="version" value="${version}" />
-				<element name="build" value="${buildDate}" />
-				<element name="created" value="${creationDate}" />
-				<element name="copyright" value="Nohex (c) 2012-${currentYear}" />
-				<element name="authors">
-					<element name="Max Noé">
-						<element name="e-mail" value="max@nohex.com" />
-					</element>
-				</element>
-			</metadata>
-		</pharpackage>
+		<!-- Prepare main target folder. -->
+		<property name="targetDir" value="${targetsDir}/${type}" />
+		<delete dir="${targetDir}" />
+		<mkdir dir="${targetDir}" />
+		<copy todir="${targetDir}">
+			<fileset refid="bootstrap" />
+			<fileset refid="${type}" />
+		</copy>
+
+		<!-- All builds other than 'main' produce suffixed files. -->
+		<if>
+			<not>
+				<equals arg1="${type}" arg2="main" />
+			</not>
+			<then>
+				<property name="suffix" value="-${type}" />
+			</then>
+			<else>
+				<property name="suffix" value="" />
+			</else>
+		</if>
 
 		<!-- Build a phar with the main code and the development code -->
+		<property name="distFile" value="${distFileName}${suffix}.${distFileType}" />
 		<pharpackage
-			destfile="${buildDir}/${distFileName}-devel.phar"
-			basedir="${develTargetDir}"
-			stub="${develTargetDir}/phar_stub.php"
+			destfile="${buildDir}/${distFile}"
+			basedir="${targetDir}"
+			stub="${targetDir}/phar_stub.php"
 			signature="sha512"
 		>
-			<fileset dir="${develTargetDir}">
+			<fileset dir="${targetDir}">
 				<include name="**/*" />
 			</fileset>
 
@@ -148,5 +212,16 @@
 				</element>
 			</metadata>
 		</pharpackage>
+	</target>
+
+	<target name="publish"
+		description="Make the packages available in the repository"
+		depends="build"
+	>
+		<copy todir="${repository}">
+			<fileset dir="${buildDir}">
+				<include name="${distFileName}*.${distFileType}" />
+			</fileset>
+		</copy>
 	</target>
 </project>

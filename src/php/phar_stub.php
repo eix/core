@@ -11,7 +11,7 @@
 $pharId = uniqid();
 Phar::mapPhar($pharId);
 
-// Set up Eix autoloader.
+// Bring Eix into the environment.
 require "phar://{$pharId}/bootstrap.php";
 
 __HALT_COMPILER();

@@ -215,7 +215,7 @@ abstract class Application
      */
     public function handleError($number, $message, $file, $line, array $context)
     {
-        // This avoid silenced (@'ed) errors from being reported.
+        // This avoids silenced (@'ed) errors from being reported.
         if (error_reporting()) {
             $message = "PHP error $number: $message\n\tat $file:$line";
             Logger::get()->error($message);
