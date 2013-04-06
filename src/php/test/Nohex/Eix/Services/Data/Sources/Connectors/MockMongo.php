@@ -8,6 +8,6 @@ class MockMongo
 {
     public function selectDB()
     {
-        return new MockMongoCollection;
+        return new MockMongoDatabase;
     }
 }

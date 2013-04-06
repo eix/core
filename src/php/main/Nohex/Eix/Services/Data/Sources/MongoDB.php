@@ -110,7 +110,7 @@ class MongoDB implements DataSource
 
     public function retrieveAll(array $filter = null, array $fields = null)
     {
-     Logger::get()->debug('Retrieving all records...');
+        Logger::get()->debug('Retrieving all records...');
 
         $result = $this->collection->find(
             $filter ?: array(),
