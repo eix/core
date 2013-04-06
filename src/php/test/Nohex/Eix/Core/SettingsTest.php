@@ -3,7 +3,6 @@
 namespace Nohex\Eix\Core;
 
 use Nohex\Eix\Core\Settings;
-use Nohex\Eix\Core\MockSettings;
 
 class SettingsTest extends \PHPUnit_Framework_TestCase
 {
@@ -44,7 +43,6 @@ class SettingsTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals($settings->application->id, 'mock');
     }
-
 
     public function testSet()
     {
