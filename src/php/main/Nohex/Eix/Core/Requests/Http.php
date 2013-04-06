@@ -12,7 +12,7 @@ class Http implements \Nohex\Eix\Core\Request
 {
     const HTTP_METHOD_GET = 'GET';
 
-    const DEFAULT_ROUTES_FILE_LOCATION = '../data/environment/routes.json';
+    const ROUTES_FILE_LOCATION = '../data/environment/routes.json';
     const DEFAULT_CONTENT_TYPE = 'text/html';
 
     protected $uri = "";
@@ -21,6 +21,8 @@ class Http implements \Nohex\Eix\Core\Request
     private $acceptedContentTypes;
     private $parameters = null;
     private $httpParameters = array();
+
+    private static $routes;
 
     public function __construct()
     {
@@ -41,7 +43,7 @@ class Http implements \Nohex\Eix\Core\Request
             $components = $this->getHttpParameters();
 
             $matched = false;
-            foreach ($this->getRoutes() as $route) {
+            foreach (self::getRoutes() as $route) {
                 if (preg_match("#^{$route['uri']}$#", $uri, $matches)) {
                     Logger::get()->debug('Found a matching route: ' . $route['uri']);
                     foreach ($route as $name => $value) {
@@ -224,25 +226,34 @@ class Http implements \Nohex\Eix\Core\Request
     /**
      * Returns the URL-Responder map.
      *
-     * @throws Exception if routes configuration are not found.
+     * @throws Exception if no usable routes source is available.
      */
-    private function getRoutes()
+    public static function getRoutes()
     {
-        // Default configuration file is in environment/routes.json.
-        if (empty($this->routes)) {
-            if (is_readable(self::DEFAULT_ROUTES_FILE_LOCATION)) {
-                $this->routes = json_decode(
-                    file_get_contents(self::DEFAULT_ROUTES_FILE_LOCATION),
+        if (empty(self::$routes)) {
+            // If no routes have been set, try the standard file.
+            if (is_readable(self::ROUTES_FILE_LOCATION)) {
+                // Decode the JSON routes file into an array.
+                self::$defaultRoutes = json_decode(
+                    file_get_contents(self::ROUTES_FILE_LOCATION),
                     true
                 );
             }
-
-            if (empty($this->routes)) {
+            // No valid routes have been found.
+            if (empty(self::$routes)) {
                 throw new Exception('No routes could be obtained. Please check the route configuration file.');
             }
         }
 
-        return $this->routes;
+        return self::$routes;
+    }
+
+    /**
+     * Set the routing table.
+     */
+    public static function setRoutes($routes)
+    {
+        self::$routes = $routes;
     }
 
     /**
