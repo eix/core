@@ -234,7 +234,7 @@ class Http implements \Nohex\Eix\Core\Request
             // If no routes have been set, try the standard file.
             if (is_readable(self::ROUTES_FILE_LOCATION)) {
                 // Decode the JSON routes file into an array.
-                self::$defaultRoutes = json_decode(
+                self::$routes = json_decode(
                     file_get_contents(self::ROUTES_FILE_LOCATION),
                     true
                 );
