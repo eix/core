@@ -2,7 +2,7 @@
 <phpunit
 	backupGlobals="true"
 	backupStaticAttributes="false"
-	bootstrap="src/php/test_bootstrap.php"
+	bootstrap="src/php/bootstrap.php"
 	cacheTokens="false"
 	colors="true"
 	convertErrorsToExceptions="true"
@@ -19,8 +19,8 @@
 	verbose="true"
 >
 	<testsuites>
-		<testsuite name="Full test suite">
-			<directory>src/php/test/*Test.php</directory>
+		<testsuite name="full">
+			<directory suffix="Test.php">src/php/test</directory>
 		</testsuite>
 	</testsuites>
 

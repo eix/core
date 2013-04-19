@@ -1,39 +1,70 @@
 <?php
-/**
- * This class deals with operations that help Eix execute in the current PHP
- * environment.
- */
 
 namespace Nohex\Eix\Core;
 
+// Return an instance of the class loader when required/included.
+return ClassLoader::getInstance();
+
+/**
+ * The class loader tells Eix where to look for when a class is requested.
+ */
 class ClassLoader
 {
+    private static $instance;
+    private static $isInitialised = false;
+
+    private function __construct() {
+        // Prevent instancing of the class loader using the 'new' operator.
+    }
+
     /**
-     * Set up an autoloader for classes under the specified path.
-     * @param string $classPath the path that holds the classes.
-     * @param boolean $failIfMissing whether the routine should fail if an
-     * unreadable path is being added.
+     * Gets the class loader instance.
      */
-    public static function addClassPath($classPath, $failIfMissing = true)
-    {
-        if (is_readable($classPath)) {
-            /**
-             * This autoloader is needed because PHP's built-in autoloader is
-             * broken. See https://bugs.php.net/bug.php?id=53065
-             *
-             * When that bug is fixed, this class loader can be removed, and
-             * Eix will be autoloadable just by existing in the include path.
-             */
-            spl_autoload_register(function($class) use ($classPath) {
-                $classFile = $classPath . '/' . strtr($class, '_\\', '//') . '.php';
-                if (file_exists($classFile)) require $classFile;
-            });
-        } elseif ($failIfMissing) {
-            throw new \Exception(sprintf(
-                'Class path %s is not accessible.',
-                $classPath
-            ));
+    public static function getInstance() {
+        if (empty(self::$instance)) {
+            self::$instance = new self;
         }
+
+        return self::$instance;
+    }
+
+    /**
+     * Registers Eix autoloader, which searches for the class in 
+     *
+     * This autoloader is needed because PHP's built-in autoloader is
+     * broken. See:
+     * * http://bugs.php.net/53065
+     * * http://bugs.php.net/48129 
+     * * http://stackoverflow.com/questions/15027486
+     *
+     * When that bug is fixed, this class loader can be removed, and
+     * Eix will be autoloadable just by existing in the include path.
+     */
+    public static function init()
+    {
+        if (!self::$isInitialised) {
+            spl_autoload_register(function($class) {
+                // Calculate the path to the class.
+                $classPath = strtr($class, '_\\', '//') . '.php';
+                // Check wether the class is in the include path.
+                $classFile = stream_resolve_include_path($classPath);
+                if (!empty($classFile)) {
+                    require_once $classFile;
+                }
+            });
+
+            self::$isInitialised = true;
+        }
+    }
+
+    /**
+     * Prepends the specified path to the include path.
+     *
+     * @param string $path the path to prepend to the include path.
+     */
+    public static function addPath($path)
+    {
+        set_include_path($path . PATH_SEPARATOR . get_include_path());
     }
 
     /**
@@ -41,7 +72,6 @@ class ClassLoader
      *
      * @param string $className the name of the class.
      */
-    // TODO: Move to ClassLoader?
     public static function isClassAvailable($className)
     {
         return class_exists($className);
@@ -52,7 +82,6 @@ class ClassLoader
      *
      * @param string $namespace the name of the class.
      */
-    // TODO: Move to ClassLoader?
     public static function isNamespaceAvailable($namespace)
     {
         // Convert the class name to a relative path.
