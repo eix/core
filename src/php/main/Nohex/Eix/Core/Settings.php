@@ -6,6 +6,10 @@ use Nohex\Eix\Services\Log\Logger;
 
 class Settings
 {
+    // The default settings script is in the 'environment' folder of the
+    // application.
+    const DEFAULT_SETTINGS_LOCATION = '../data/environment/';
+
     private $settings;
     private $environment;
 
@@ -20,16 +24,19 @@ class Settings
     {
         // Find out the current environment.
         if (empty($environment)) {
-            if (PHP_SAPI == 'cli') {
-                $this->environment = 'cli';
-            } else {
-                $this->environment = getenv('EIX_ENV');
-            }
+            $this->environment = getenv('EIX_ENV')
+                ?: @$_SERVER['EIX_ENV']
+                ?: @$_ENV['EIX_ENV']
+            ;
         } else {
             $this->environment = $environment;
         }
 
-        if (is_array($source)) {
+        // Parse the settings source.
+        if (empty($source)) {
+            // No source specified, load from the default location.
+            $this->loadFromLocation(self::DEFAULT_SETTINGS_LOCATION);
+        } elseif (is_array($source)) {
             // Source is an array, convert to object.
             $this->settings = self::objectify($source);
         } elseif (is_object($source)) {
@@ -37,7 +44,7 @@ class Settings
             $this->settings = $source;
         } elseif (is_string($source)) {
             // Source is a string, assume it's a settings location.
-            $this->loadFromFile($source);
+            $this->loadFromLocation($source);
         } else {
             // Source is anything else, don't know what to do with it.
             throw new Settings\Exception('Settings source is unknown.');
@@ -49,15 +56,10 @@ class Settings
      *
      * @param string $source The location of the settings file.
      */
-    private function loadFromFile($location)
+    private function loadFromLocation($location)
     {
         Logger::get()->debug('Loading settings...');
-        if (empty($location)) {
-            // The default settings script is in the 'environment' folder of the
-            // application.
-            $location = '../data/environment/';
-        }
-
+        // Add the trailing slash to the folder if it is missing.
         if (substr($location, -1) != DIRECTORY_SEPARATOR) {
             $location .= DIRECTORY_SEPARATOR;
         }
