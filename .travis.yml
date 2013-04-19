@@ -1,7 +1,5 @@
 language: php
 php:
   - 5.3
-script:
-  - phpunit -c phpunit.xml src/php/test
 env:
   - EIX_ENV=TEST
