@@ -96,7 +96,7 @@ class MongoDB implements DataSource
 
     public function retrieve($id)
     {
-     Logger::get()->debug("Retrieving record {$id}...");
+        Logger::get()->debug("Retrieving record {$id}...");
 
         self::normaliseId($id);
         $result = $this->collection->findOne(array('_id' => $id));
