@@ -21,9 +21,11 @@ class Error extends HttpResponder
             $exception = @$request->getException();
             if ($exception) {
                 Logger::get()->debug(sprintf(
-                    'Error controller called because %s [%d].',
+                    'Error controller called because %s [%d].%s%s',
                     lcfirst($exception->getMessage()),
-                    $exception->getCode()
+                    $exception->getCode(),
+                    PHP_EOL,
+                    $exception->getTraceAsString()
                 ));
             } else {
                 throw new Exception('The request does not carry an exception.');
