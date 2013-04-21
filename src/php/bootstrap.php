@@ -8,17 +8,17 @@
 // Get the class loader.
 $classLoader = null;
 if (class_exists('\\Nohex\\Eix\\Core\\ClassLoader')) {
-	$classLoader = \Nohex\Eix\Core\ClassLoader::getInstance();
+    $classLoader = \Nohex\Eix\Core\ClassLoader::getInstance();
 } else {
-	$classLoaderLocation = __DIR__ . '/main/Nohex/Eix/Core/ClassLoader.php';
-	if (is_readable($classLoaderLocation)) {
-		// This is the Eix library, so a direct class require is tried. Any
-		// other library should be using Eix's phar, so a require of that phar
-		// should be used here.
-		$classLoader = require_once __DIR__ . '/main/Nohex/Eix/Core/ClassLoader.php';
-	} else {
-		throw new RuntimeException('Eix is not available.');
-	}
+    $classLoaderLocation = __DIR__ . '/main/Nohex/Eix/Core/ClassLoader.php';
+    if (is_readable($classLoaderLocation)) {
+        // This is the Eix library, so a direct class require is tried. Any
+        // other library should be using Eix's phar, so a require of that phar
+        // should be used here.
+        $classLoader = require_once __DIR__ . '/main/Nohex/Eix/Core/ClassLoader.php';
+    } else {
+        throw new RuntimeException('Eix is not available.');
+    }
 }
 // Add the main source folder to the include path.
 $classLoader->addPath(__DIR__ . '/main');

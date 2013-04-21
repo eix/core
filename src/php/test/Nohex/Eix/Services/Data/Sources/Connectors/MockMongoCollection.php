@@ -2,8 +2,6 @@
 
 namespace Nohex\Eix\Services\Data\Sources\Connectors;
 
-use Nohex\Eix\Modules\Catalog\Model\Product;
-
 class MockMongoCollection
 {
     public $returns = array();
@@ -13,13 +11,13 @@ class MockMongoCollection
         return $this->returns[self::getSignature($filter, $fields)];
     }
 
-
     /**
      * Returns a hash consisting of the concatenated serialised strings of the
      * the arguments. No arguments are declared to leave the function open to
      * accept as many as they come.
      */
-    private static function getSignature(array $arguments) {
+    private static function getSignature(array $arguments)
+    {
         $signatureString = '';
         foreach (func_get_args() as $argument) {
             $signatureString += serialize($argument);

@@ -13,14 +13,16 @@ class ClassLoader
     private static $instance;
     private static $isInitialised = false;
 
-    private function __construct() {
+    private function __construct()
+    {
         // Prevent instancing of the class loader using the 'new' operator.
     }
 
     /**
      * Gets the class loader instance.
      */
-    public static function getInstance() {
+    public static function getInstance()
+    {
         if (empty(self::$instance)) {
             self::$instance = new self;
         }
@@ -29,12 +31,12 @@ class ClassLoader
     }
 
     /**
-     * Registers Eix autoloader, which searches for the class in 
+     * Registers Eix autoloader, which searches for the class in
      *
      * This autoloader is needed because PHP's built-in autoloader is
      * broken. See:
      * * http://bugs.php.net/53065
-     * * http://bugs.php.net/48129 
+     * * http://bugs.php.net/48129
      * * http://stackoverflow.com/questions/15027486
      *
      * When that bug is fixed, this class loader can be removed, and

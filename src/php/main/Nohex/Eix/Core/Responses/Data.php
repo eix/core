@@ -6,7 +6,6 @@
 
 namespace Nohex\Eix\Core\Responses;
 
-use Nohex\Eix\Services\Log\Logger;
 use Nohex\Eix\Core\Response;
 
 abstract class Data implements Response
@@ -45,10 +44,10 @@ abstract class Data implements Response
 
     public function getData($key = NULL)
     {
-    	if (empty($key)) {
-        	return $this->data;
-    	} else {
-    		return $this->data[$key];
-    	}
+        if (empty($key)) {
+            return $this->data;
+        } else {
+            return $this->data[$key];
+        }
     }
 }
