@@ -148,6 +148,13 @@ abstract class Entity
     abstract protected function getFieldValidators();
 
     /**
+     * Returns a list of all the entity's fields that can be displayed.
+     *
+     * @return mixed[] the fields and their values.
+     */
+    abstract public function getForDisplay();
+
+    /**
      * Returns the factory instance that serves objects of the current class.
      * @return Factory
      */

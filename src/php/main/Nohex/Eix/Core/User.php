@@ -90,6 +90,15 @@ class User extends Entity
         );
     }
 
+    public function getForDisplay()
+    {
+        return array(
+            'id' => $this->id,
+            'name' => $this->name,
+            'email' => $this->email,
+        );
+    }
+
     /**
      * Generates an ID for a new user.
      *
