@@ -52,7 +52,7 @@ class Logger
     }
 
     /**
-     * Gets the logger's default instance.
+     * Sets the logger's default instance.
      */
     public static function set(Logger $logger)
     {
@@ -65,11 +65,12 @@ class Logger
     private function log($message, $level)
     {
         if ($level <= $this->level) {
-            // The default log file is named after the application, and lives
-            // in the directory specified in the error_log setting.
             if (empty($this->errorLogFile)) {
+                // The default log file is named after the application, and
+                // lives in the directory specified in the error_log setting. If
+                // the latter is empty, the temporary folder is used.
                 $this->errorLogFile = sprintf('%s/%s.log',
-                    dirname(ini_get('error_log')),
+                    dirname(ini_get('error_log')) ?: sys_get_temp_dir(),
                     $this->id
                 );
             }
