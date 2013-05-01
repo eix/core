@@ -11,27 +11,17 @@ class Settings
     const DEFAULT_SETTINGS_LOCATION = '../data/environment/';
 
     private $settings;
-    private $environment;
+    private static $environment;
 
     /**
      * Builds a settings object.
      *
      * @param mixed $source a location where settings can be loaded, or an
      * object or array with settings.
-     * @param string $environment
+     * @param string $environment the environment the settings
      */
-    public function __construct($source = null, $environment = null)
+    public function __construct($source = null)
     {
-        // Find out the current environment.
-        if (empty($environment)) {
-            $this->environment = getenv('EIX_ENV')
-                ?: @$_SERVER['EIX_ENV']
-                ?: @$_ENV['EIX_ENV']
-            ;
-        } else {
-            $this->environment = $environment;
-        }
-
         // Parse the settings source.
         if (empty($source)) {
             // No source specified, load from the default location.
@@ -73,11 +63,12 @@ class Settings
             } else {
                 // Load settings customised for the current environment.
                 $environmentSettings = null;
-                if ($this->environment) {
+                $environment = self::getEnvironment();
+                if ($environment) {
                     $environmentSettingsLocation = sprintf(
                         '%ssettings-%s.json',
                         $location,
-                        strtolower($this->environment)
+                        strtolower($environment)
                     );
                     if (is_readable($environmentSettingsLocation)) {
                         $environmentSettings = json_decode(file_get_contents($environmentSettingsLocation), true);
@@ -141,5 +132,32 @@ class Settings
         }
 
         return (object) $array;
+    }
+
+    /**
+     * Set the operating environment.
+     *
+     * @param string $environment the new environment.
+     */
+    public static function setEnvironment($environment) {
+        self::$environment = $environment;
+        // TODO: Invalidate settings?
+    }
+
+    /**
+     * Find out the current environment.
+     *
+     * @return string the current environment.
+     */
+    public static function getEnvironment()
+    {
+        if (empty(self::$environment)) {
+            self::$environment = getenv('EIX_ENV')
+                ?: @$_SERVER['EIX_ENV']
+                ?: @$_ENV['EIX_ENV']
+            ;
+        }
+
+        return self::$environment;
     }
 }
