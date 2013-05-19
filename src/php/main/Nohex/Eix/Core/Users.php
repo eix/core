@@ -65,17 +65,14 @@ class Users extends \Nohex\Eix\Services\Data\Factory
     }
 
     /**
-     * Returns uniform IDs based on various user data. The ID is a hash of the
-     * data joined by the salt.
+     * Returns predictable and repeatable uniform IDs based on user data.
      *
      * @param  array  $userData as many fields of user data as needed.
      * @return string
      */
     public static function getUserId(array $userData)
     {
-        $salt = Application::getCurrent()->getSalt();
-
-        return hash('crc32b', join($salt, $userData));
+        return hash('crc32b', join('#', $userData));
     }
 
     /**

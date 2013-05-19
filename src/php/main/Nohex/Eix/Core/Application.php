@@ -413,13 +413,4 @@ abstract class Application
     {
         return $this->requestId;
     }
-
-    public function getSalt()
-    {
-        if (empty($_SESSION['salt'])) {
-            $_SESSION['salt'] = sha1(uniqid('eix', true));
-        }
-
-        return $_SESSION['salt'];
-    }
 }
