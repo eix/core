@@ -213,8 +213,8 @@ abstract class Entity
     public function getDataSource()
     {
         if (empty($this->dataSource)) {
-            // Assign the data source, now that one is needed.
-            $this->assignDataSource();
+            // Since no data source is available, retrieve the default one.
+            $this->dataSource = $this->getDefaultDataSource();
             // If, after assigning the data source, there is still nothing in
             // the property, then fail.
             if (empty($this->dataSource)) {
