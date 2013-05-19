@@ -174,7 +174,7 @@ class Http implements \Nohex\Eix\Core\Request
 
     /**
      * Set the HTTP method used by this request.
-     * 
+     *
      * @param string $method
      */
     public function setMethod($method)

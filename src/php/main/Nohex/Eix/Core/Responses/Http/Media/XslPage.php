@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Nohex\Eix\Core\Responses\Http\Media;
 
 use Nohex\Eix\Core\Application;
@@ -21,9 +20,9 @@ class XslPage extends WebPage
     private static $locale;
 
     /**
-     * 
-     * @param type $templateId
-     * @param type $data
+     *
+     * @param  type           $templateId
+     * @param  type           $data
      * @throws MediaException
      */
     public function __construct($templateId, $data)

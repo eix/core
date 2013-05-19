@@ -89,7 +89,8 @@ class Settings
         }
     }
 
-    public function	get($key, $default = null, $failOnMissing = false) {
+    public function get($key, $default = null, $failOnMissing = false)
+    {
         if (isset($this->settings->$key)) {
             return $this->settings->$key;
         } else {
@@ -139,7 +140,8 @@ class Settings
      *
      * @param string $environment the new environment.
      */
-    public static function setEnvironment($environment) {
+    public static function setEnvironment($environment)
+    {
         self::$environment = $environment;
         // TODO: Invalidate settings?
     }

@@ -19,7 +19,7 @@ class ClassLoader
     }
 
     /**
-     * Gets the class loader instance.
+     * Gets the class loader's only allowed instance.
      */
     public static function getInstance()
     {
@@ -31,7 +31,8 @@ class ClassLoader
     }
 
     /**
-     * Registers Eix autoloader, which searches for the class in
+     * Registers Eix autoloader, which searches for the class in the include
+     * path.
      *
      * This autoloader is needed because PHP's built-in autoloader is
      * broken. See:

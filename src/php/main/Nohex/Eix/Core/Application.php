@@ -11,6 +11,7 @@ use Nohex\Eix\Core\Settings\Exception as SettingsException;
 use Nohex\Eix\Core\Responders\Http\Identity as IdentityResponder;
 use Nohex\Eix\Services\Log\Logger;
 use Nohex\Eix\Services\Net\Http\Exception as HttpException;
+use Nohex\Eix\Core\Requests\Http as HttpRequest;
 
 abstract class Application
 {
@@ -18,7 +19,6 @@ abstract class Application
 
     private static $instance;
     private $settings;
-    private $logger;
     private $locale;
     private $availableLocales;
     private $requestId;
@@ -166,6 +166,7 @@ abstract class Application
             $responder = new IdentityResponder($request);
             $response = $responder->getResponse();
         }
+
         if ($response instanceof Response) {
             // Provide a hook for last-minute response work.
             $this->alterResponse($response);

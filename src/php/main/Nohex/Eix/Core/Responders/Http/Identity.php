@@ -1,18 +1,20 @@
 <?php
-/**
- * An HTML-based responder that manages users' identities.
- */
 
 namespace Nohex\Eix\Core\Responders\Http;
 
+use Nohex\Eix\Core\Application;
+use Nohex\Eix\Core\Responders\Http\Page;
+use Nohex\Eix\Core\Responses\Http\Redirection;
+use Nohex\Eix\Core\Users;
+use Nohex\Eix\Services\Identity\Providers\Google as GoogleIdentityProvider;
 use Nohex\Eix\Services\Net\Http\BadRequestException;
 use Nohex\Eix\Services\Net\Http\NotAuthenticatedException;
-use Nohex\Eix\Core\Responses\Http\Redirection;
-use Nohex\Eix\Services\Identity\Providers\Google as GoogleIdentityProvider;
-use Nohex\Eix\Core\Users;
-use Nohex\Eix\Core\Application;
+use Nohex\Eix\Services\Net\Mail\AuthenticationException;
 
-class Identity extends \Nohex\Eix\Core\Responders\Http\Page
+/**
+ * An HTML-based responder that manages users' identities.
+ */
+class Identity extends Page
 {
     protected $section = '.identity';
 
@@ -21,10 +23,6 @@ class Identity extends \Nohex\Eix\Core\Responders\Http\Page
         return $this->httpGetForHtml();
     }
 
-    /*
-     * Overrides the standard HTTP response obtention method with one that
-    * uses the template ID to set the location of the template.
-    */
     public function httpGetForHtml()
     {
         $response = parent::httpGetForHtml();
@@ -66,10 +64,6 @@ class Identity extends \Nohex\Eix\Core\Responders\Http\Page
         return $response;
     }
 
-    /*
-     * Overrides the standard HTTP response obtention method with one that
-    * uses the template ID to set the location of the template.
-    */
     public function httpPostForHtml()
     {
         $response = null;
@@ -101,7 +95,7 @@ class Identity extends \Nohex\Eix\Core\Responders\Http\Page
 
     /**
      * First step in the Google authentication process.
-     * @return \Nohex\Eix\Core\Responses\Http\Redirection
+     * @return Redirection
      */
     private function getStartGoogleAuthenticationResponse()
     {

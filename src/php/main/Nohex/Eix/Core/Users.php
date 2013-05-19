@@ -5,15 +5,15 @@
 
 namespace Nohex\Eix\Core;
 
-use Nohex\Eix\Core\Application;
-use Nohex\Eix\Services\Log\Logger;
+use Nohex\Eix\Core\User;
+use Nohex\Eix\Services\Data\Factory;
 use Nohex\Eix\Services\Data\Sources\MongoDB as DataSource;
+use Nohex\Eix\Services\Identity\Provider;
+use Nohex\Eix\Services\Log\Logger;
 use Nohex\Eix\Services\Net\Http\NotAuthorisedException;
 use Nohex\Eix\Services\Net\Http\NotFoundException;
-use Nohex\Eix\Services\Identity\Provider;
-use Nohex\Eix\Core\User;
 
-class Users extends \Nohex\Eix\Services\Data\Factory
+class Users extends Factory
 {
     const COLLECTION = 'users';
     const ENTITIES_CLASS_NAME = '\Nohex\Eix\Core\User';

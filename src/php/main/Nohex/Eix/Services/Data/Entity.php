@@ -112,10 +112,10 @@ abstract class Entity
 
         if (!empty($validators)) {
             foreach ($validators as $type) {
-             Logger::get()->debug("Validating $name with $type...");
+                Logger::get()->debug("Validating $name with $type...");
                 $validator = Validators::get($type);
                 if (!$validator->isValid($value)) {
-                 Logger::get()->debug('Failed!');
+                    Logger::get()->debug('Failed!');
                     // The validation has failed, report its data.
                     $failedValidations[] = $validator->getFailMessage();
                 }
@@ -232,13 +232,13 @@ abstract class Entity
     {
         // Check whether the object has ever been stored.
         if ($this->isNew) {
-         Logger::get()->debug('Storing new entity ' . get_class($this) . '...');
+            Logger::get()->debug('Storing new entity ' . get_class($this) . '...');
             // Create the record. Get an ID back.
             $this->id = $this->getDataSource()->create($this->getFieldsData());
             // Store this object in the appropriate factory for further use.
             $this->getFactory()->registerEntity($this);
         } else {
-         Logger::get()->debug('Updating entity ' . get_class($this) . ":{$this->id}...");
+            Logger::get()->debug('Updating entity ' . get_class($this) . ":{$this->id}...");
             $this->getDataSource()->update($this->id, $this->getFieldsData());
         }
 
