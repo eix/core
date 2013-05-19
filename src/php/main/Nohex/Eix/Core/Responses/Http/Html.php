@@ -40,7 +40,7 @@ class Html extends \Nohex\Eix\Core\Responses\Http
 
         $this->setData('page', array(
             // Piece the title together.
-            'title' => implode(' — ', $this->titleParts),
+            'title' => @implode(' — ', $this->titleParts),
             // Add information about the current template.
             'template' => str_replace(array('.', '/'), '_', $this->templateId),
             // Inform about the page's content type.
