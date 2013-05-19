@@ -1,15 +1,15 @@
 <?php
 
-/*
- * Page represents a web page in View instance.
- * max@nohex.com 20050817
- */
 
 namespace Nohex\Eix\Core\Responses\Http\Media;
 
 use Nohex\Eix\Core\Application;
 use Nohex\Eix\Services\Log\Logger;
+use Nohex\Eix\Core\Responses\Http\Media\Exception as MediaException;
 
+/*
+ * A page that is build using XML data and an XSL stylesheet.
+ */
 class XslPage extends WebPage
 {
     const DATA_PATH_ROOT = '/response';
@@ -20,15 +20,25 @@ class XslPage extends WebPage
     private static $pagesLocation;
     private static $locale;
 
+    /**
+     * 
+     * @param type $templateId
+     * @param type $data
+     * @throws MediaException
+     */
     public function __construct($templateId, $data)
     {
+        if (empty($templateId)) {
+            throw new MediaException('No template has been specified.');
+        }
+
+        $this->templateId = $templateId;
+        $this->data = $data;
+
         // An XML document is created to hold data.
         $this->dataDocument = new Library\Dom(
             Application::getCurrent()->getSettings()->resources->templates->response
         );
-
-        $this->templateId = $templateId;
-        $this->data = $data;
 
         if (empty(self::$pagesLocation)) {
             self::$pagesLocation = Application::getSettings()->resources->pages->location;
@@ -62,10 +72,10 @@ class XslPage extends WebPage
         if (file_exists($location)) {
             $template = new Library\Dom($location);
             if (!$template) {
-                throw new Exception("Template '{$location}' failed to load.", 404);
+                throw new MediaException("Template '{$location}' failed to load.", 404);
             }
         } else {
-            throw new Exception("Template '{$location}' was not found.", 404);
+            throw new MediaException("Template '{$location}' was not found.", 404);
         }
 
         return $template;
