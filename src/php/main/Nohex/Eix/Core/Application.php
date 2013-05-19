@@ -38,10 +38,24 @@ abstract class Application
         }
     }
 
+    /**
+     * Sets the specified application as the currently running one.
+     *
+     * @param \Nohex\Eix\Core\Application $application the application to set as
+     * the current one.
+     */
+    public static function setCurrent(Application $application)
+    {
+        self::$instance = $application;
+    }
+
     public function __construct(Settings $settings = null)
     {
-        // Keep a reference to the running application.
-        self::$instance = $this;
+        // If no other application is running, set the newly created as the
+        // current application.
+        if (empty(self::$instance)) {
+            self::setCurrent($this);
+        }
 
         // Start a session, if possible.
         @session_start();
