@@ -5,12 +5,10 @@
 
 namespace Nohex\Eix\Core\Responses\Http;
 
-use Nohex\Eix\Core\MockApplication;
 use Nohex\Eix\Core\Responses\Http\Html as HtmlResponse;
 
 class HtmlTest extends \PHPUnit_Framework_TestCase
 {
-    private static $application;
     private static $data;
 
     protected function setUp()
@@ -18,8 +16,6 @@ class HtmlTest extends \PHPUnit_Framework_TestCase
         self::$data = array(
             'key' => 'value',
         );
-
-        self::$application = new MockApplication;
     }
 
     public function testDefaultConstructor()
@@ -34,7 +30,6 @@ class HtmlTest extends \PHPUnit_Framework_TestCase
     protected function tearDown()
     {
         self::$data = null;
-        self::$application = null;
     }
 
 }
