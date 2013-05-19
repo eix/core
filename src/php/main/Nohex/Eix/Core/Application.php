@@ -162,6 +162,7 @@ abstract class Application
             // signing in.
             $this->keepCurrentLocator($request);
             // Request identification from the user.
+            $request->setMethod(HttpRequest::HTTP_METHOD_GET);
             $responder = new IdentityResponder($request);
             $response = $responder->getResponse();
         }
