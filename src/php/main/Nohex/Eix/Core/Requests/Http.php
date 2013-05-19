@@ -11,6 +11,9 @@ use Nohex\Eix\Services\Log\Logger;
 class Http implements \Nohex\Eix\Core\Request
 {
     const HTTP_METHOD_GET = 'GET';
+    const HTTP_METHOD_POST = 'POST';
+    const HTTP_METHOD_DELETE = 'DELETE';
+    const HTTP_METHOD_PUT = 'PUT';
 
     const ROUTES_FILE_LOCATION = '../data/environment/routes.json';
     const DEFAULT_CONTENT_TYPE = 'text/html';
@@ -167,6 +170,16 @@ class Http implements \Nohex\Eix\Core\Request
         }
 
         return strtoupper($this->method);
+    }
+
+    /**
+     * Set the HTTP method used by this request.
+     * 
+     * @param string $method
+     */
+    public function setMethod($method)
+    {
+        $this->method = $method;
     }
 
     /**
