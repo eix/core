@@ -62,7 +62,7 @@ class Dom
                         } else {
                             $this->logger->warning('File cannot be read: ' . $source, LOG_WARNING);
                             throw new Dom\Exception(sprintf(
-                                'Cannot load document at %s',
+                                'Cannot load document at %s (Current path: %s)',
                                 $source,
                                 realpath('.')
                             ));
