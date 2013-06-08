@@ -2,53 +2,57 @@
 
 namespace Nohex\Eix\Services\Data\Responders;
 
-use Nohex\Eix\Core\Request;
-use Nohex\Eix\Core\Responses\Http\Html as HtmlResponse;
 use Nohex\Eix\Core\Responders\Http as HttpResponder;
+use Nohex\Eix\Core\Responses\Http\Html;
+use Nohex\Eix\Core\Responses\Http\Html as HtmlResponse;
+use Nohex\Eix\Services\Data\Entity;
+use Nohex\Eix\Services\Data\Exception;
+use Nohex\Eix\Services\Data\Factory;
 
 /**
  * A responder used to browse the contents of a collection of entities.
  */
 abstract class CollectionBrowser extends HttpResponder
 {
-    /**
-     * Returns the name of the collection this list deals with. It usually is
-     * the plural of the item name.
-     */
-    abstract public function getCollectionName();
+    private static $factories;
 
-    /**
-     * Returns the name of an item this list is composed of. It usually is the
-     * singular of the collection name.
-     */
-    abstract public function getItemName();
+    abstract public function getDefaultFactory();
 
-    /**
-     * Returns the entity with the given ID.
-     * This function needs to be implemented to return the appropriate
-     * entity.
-     * @param  string                          $id the entity's ID.
-     * @return \Nohex\Eix\Services\Data\Entity
-     */
-    abstract protected function getEntity($id);
-
-    /**
-     * This function needs to be implemented to return a set of entities.
-     * @param string $view an optional filter name that the implementing
-     * function parses to produce a particular view of the collection.
-     * @return \Nohex\Eix\Services\Data\Entity[] the resulting entities
-     */
-    abstract protected function getEntities($view = null);
-
-    /**
-     * Returns an HTML response. This function is meant to be overriden in
-     * descending classes, when a plain HTML response is not enough.
-     *
-     * @param \Nohex\Eix\Core\Request $request
-     */
-    protected function getHtmlResponse(Request $request)
+    public function getCollectionName()
     {
-        return new HtmlResponse($request);
+        return static::COLLECTION_NAME;
+    }
+
+    public function getItemName()
+    {
+        return static::ITEM_NAME;
+    }
+
+    protected function getEntityClass()
+    {
+        return new ReflectionClass(static::ITEM_CLASS);
+    }
+
+    protected function getEntity($id)
+    {
+        // Fetch the entity with that identifier.
+        return $this->getFactory()->findEntity($id);
+    }
+
+    protected function getEntities($view = NULL)
+    {
+        return $this->getFactory()->getAll();
+    }
+
+    /**
+     * Provide a default HTML response. To be overriden if a standard HTML
+     * response is not adequate.
+     *
+     * @return \Nohex\Eix\Services\Data\Responders\HtmlResponse
+     */
+    protected function getHtmlResponse()
+    {
+        return new HtmlResponse($this->getRequest());
     }
 
     public function httpGetForAll()
@@ -58,7 +62,7 @@ abstract class CollectionBrowser extends HttpResponder
 
     /**
      * GET /{collection}[/:id]
-     * @return \Nohex\Eix\Core\Responses\Http\Html
+     * @return Html
      */
     public function httpGetForHtml()
     {
@@ -67,33 +71,23 @@ abstract class CollectionBrowser extends HttpResponder
 
         if ($id) {
             $entity = $this->getEntity($id);
-            $response = $this->getHtmlResponse($this->getRequest());
-            $response->setTemplateId(sprintf('%s/edit',
-                $this->getCollectionName()
-            ));
-            $response->setData(
-                $this->getItemName(),
-                $entity->getFieldsData()
-            );
-            $response->appendToTitle(
-                sprintf(_('%s %s'),
-                    ucfirst($this->getItemName()),
-                    $id
-                )
-            );
+            if ($entity) {
+                $response = $this->getViewResponse($entity);
+            } else {
+                throw new Exception('No entity found for identifier ' . $id);
+            }
         } else {
             // Get the entities to be displayed.
             $entities = $this->getEntities($view);
             // Create a Response.
-            $response = $this->getHtmlResponse($this->getRequest());
+            $response = $this->getHtmlResponse();
             // Set the index template.
-            $response->setTemplateId(sprintf('%s/index',
-                $this->getCollectionName()
+            $response->setTemplateId(sprintf(
+                            '%s/index', $this->getCollectionName()
             ));
             // Load the entities' data into the response.
             $response->setData(
-                $this->getCollectionName(),
-                $entities
+                    $this->getCollectionName(), $entities
             );
             // Append a descriptive title.
             $response->appendToTitle(ucfirst($this->getCollectionName()));
@@ -103,5 +97,77 @@ abstract class CollectionBrowser extends HttpResponder
         $response->setData('page', array('view', $view));
 
         return $response;
+    }
+
+    /**
+     * Get an entity's displayable data.
+     * @param  string $id the identifier of the entity to get the data from.
+     * @return array
+     */
+    protected function getForDisplay($id)
+    {
+        return $this->getFactory()->findEntity($id)->getForDisplay();
+    }
+
+    /**
+     * Get the factory that supplies entities to the collection browser.
+     *
+     * @return Factory
+     * @throws Exception
+     */
+    protected function getFactory()
+    {
+        $calledClass = get_called_class();
+        if (empty(self::$factories[$calledClass])) {
+            self::$factories[$calledClass] = $this->getDefaultFactory();
+        }
+
+        return self::$factories[$calledClass];
+    }
+
+    /**
+     * Set a factory to supply entities to the collection browser.
+     *
+     * @param \Nohex\Eix\Services\Data\Responders\Factory $factory
+     */
+    public static function setFactory(Factory $factory)
+    {
+        $calledClass = get_called_class();
+        self::$factories[$calledClass] = $factory;
+    }
+
+    /**
+     * Generate a response that displays an entity's data.
+     *
+     * @param  \Nohex\Eix\Services\Data\Entity $entity
+     * @return Response
+     */
+    protected function getViewResponse(Entity $entity)
+    {
+        $response = $this->getHtmlResponse();
+        $response->setTemplateId($this->getViewTemplateId());
+        $response->setData(
+                $this->getItemName(),
+                $entity->getFieldsData()
+        );
+        $response->appendToTitle(sprintf(
+            _('%s %s'),
+            ucfirst($this->getItemName()),
+            $entity->getId()
+        ));
+
+        return $response;
+    }
+
+    /**
+     * Get the template identifier for entity view pages.
+     * @return string
+     */
+    protected function getViewTemplateId()
+    {
+        return sprintf(
+            '%s/view',
+            $this->getCollectionName()
+        );
     }
 }

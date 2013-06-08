@@ -2,26 +2,142 @@
 
 namespace Nohex\Eix\Services\Data\Responders;
 
+use Nohex\Eix\Core\Exception;
 use Nohex\Eix\Core\Responders\Restricted;
+use Nohex\Eix\Core\Responses\Http;
+use Nohex\Eix\Core\Responses\Http\Html;
 use Nohex\Eix\Core\Responses\Http\Redirection;
+use Nohex\Eix\Services\Data\Entity;
+use Nohex\Eix\Services\Data\Factory;
 use Nohex\Eix\Services\Net\Http\BadRequestException;
 use Nohex\Eix\Services\Net\Http\NotFoundException;
-use Nohex\Eix\Services\Data\Validators\Exception;
 
 /**
  * A responder used to manage the contents of a collection of entities.
  */
 abstract class CollectionManager extends CollectionBrowser implements Restricted
 {
+    private $collectionBrowser;
+
+    /**
+     * Get this collection manager's underlying collection browser.
+     *
+     * @return CollectionBrowser
+     */
+    protected function getCollectionBrowser()
+    {
+        if (empty($this->collectionBrowser)) {
+            throw new Exception('No collection browser set for ' . get_called_class());
+        }
+
+        return $this->collectionBrowser;
+    }
+
+    /**
+     * Establish this collection manager's underlying collection browser.
+     *
+     * @param \Nohex\Eix\Services\Data\Responders\CollectionBrowser $collectionBrowser
+     */
+    protected function setCollectionBrowser(CollectionBrowser $collectionBrowser)
+    {
+        $this->collectionBrowser = $collectionBrowser;
+    }
+
+    /**
+     * The default factory defaults to the collection browser's.
+     *
+     * @return Factory
+     */
+    public function getDefaultFactory()
+    {
+        return $this->getCollectionBrowser()->getDefaultFactory();
+    }
+
+    /**
+     * @see CollectionBrowser::getCollectionName;
+     *
+     * Lacking polymorphism and PHP 5.4's traits, this technique allows using
+     * both an implementation of the collection browser, and the implementation
+     * of the collection manager.
+     */
+    public function getCollectionName()
+    {
+        return $this->getCollectionBrowser()->getCollectionName();
+    }
+
+    /**
+     * @see CollectionBrowser::getCollectionName;
+     *
+     * Lacking polymorphism and PHP 5.4's traits, this technique allows using
+     * both an implementation of the collection browser, and the implementation
+     * of the collection manager.
+     */
+    public function getItemName()
+    {
+        return $this->getCollectionBrowser()->getItemName();
+    }
+
+    /**
+     * @see CollectionBrowser::getEntity;
+     *
+     * Lacking polymorphism and PHP 5.4's traits, this technique allows using
+     * both an implementation of the collection browser, and the implementation
+     * of the collection manager.
+     */
+    protected function getEntity($id)
+    {
+        return $this->getCollectionBrowser()->getEntity($id);
+    }
+
+    /**
+     * @see CollectionBrowser::getEntities;
+     *
+     * Lacking polymorphism and PHP 5.4's traits, this technique allows using
+     * both an implementation of the collection browser, and the implementation
+     * of the collection manager.
+     */
+    protected function getEntities($view = null)
+    {
+        return $this->getCollectionBrowser()->getEntities($view);
+    }
+
     /**
      * Destroys the selected entity.
      */
-    abstract protected function destroyEntity($id);
+    protected function destroyEntity($id)
+    {
+        return $this->getFactory()->findEntity($id)->destroy();
+    }
 
     /**
-     * Stores the current entity.
+     * Updates the entity with the new data in the request and stores it.
+     *
+     * @return Entity the stored entity
      */
-    abstract protected function storeEntity();
+    protected function storeEntity()
+    {
+        $request = $this->getRequest();
+        $id = $request->getParameter('id');
+        // Try to find an existing instance of the entity.
+        $entity = NULL;
+        try {
+            $entity = $this->getFactory()->findEntity($id);
+        } catch (NotFoundException $exception) {
+            // Not found? Create it.
+            $className = $this->getFactory()->getEntitiesClassName();
+            $entity = new $className(array(
+                'id' => $id,
+            ));
+        }
+
+
+        // Update the product from the request data.
+        $entity->update($this->getEntityDataFromRequest());
+        // Store the entity.
+        $entity->store();
+
+        return $entity;
+    }
 
     /**
      * Returns all the data in the request that is associated with the entity
@@ -31,13 +147,6 @@ abstract class CollectionManager extends CollectionBrowser implements Restricted
     abstract protected function getEntityDataFromRequest();
 
     /**
-     * This function must return the ReflectionClass object of the type of
-     * entities this collection deals with.
-     * @return ReflectionClass
-     */
-    abstract protected function getEntityClass();
-
-    /**
      * Gets the current entity's data so that it can be set into the request.
      */
     public function getEntityData()
@@ -45,43 +154,50 @@ abstract class CollectionManager extends CollectionBrowser implements Restricted
         $entity = null;
         try {
             $entity = $this->getEntity(
-                $this->getRequest()->getParameter('id')
+                    $this->getRequest()->getParameter('id')
             );
         } catch (NotFoundException $exception) {
             // The entity does not exist, create a new one from the data in the
             // request.
             $entity = $this->getEntityClass()->newInstanceArgs(
-                $this->getEntityDataFromRequest()
+                    $this->getEntityDataFromRequest()
             );
         }
 
         return $entity->getFieldsData();
     }
 
-
     /**
      * GET /{collection}[/:operation]
      *
-     * @return \Nohex\Eix\Core\Responses\Http\Html
+     * @return Html
      */
     public function httpGetForHtml()
     {
         $id = $this->getRequest()->getParameter('id');
 
+        $response = null;
+        if (empty($id)) {
+            $response = parent::httpGetForHtml();
+        } else {
+            // The 'new' pseudo-ID indicates a new entity. Therefore, the ID
+            // remains empty.
+            $entity = ($id != 'new') ? $this->getEntity($id) : null;
+            $response = $this->getEditionResponse($entity);
+        }
         switch ($id) {
             case 'new':
-                // This pseudo-ID indicates a new entity which does not yet
-                // have an ID.
-                return $this->getEditionResponse();
+                break;
             default:
-                return parent::httpGetForHtml();
-        }
+       }
+
+        return $response;
     }
 
     /**
      * POST /{collection}[/:id]
      *
-     * @return \Nohex\Eix\Core\Responses\Http\Html
+     * @return Html
      */
     public function httpPostForHtml()
     {
@@ -117,7 +233,7 @@ abstract class CollectionManager extends CollectionBrowser implements Restricted
     /**
      * POST /{collection}/delete[/:id]
      *
-     * @return \Nohex\Eix\Core\Responses\Http\Html
+     * @return Html
      */
     public function httpPostDeleteForHtml()
     {
@@ -145,7 +261,7 @@ abstract class CollectionManager extends CollectionBrowser implements Restricted
      * part of the URL.
      * @param array $selectedIds the IDs onto which the action would be
      * performed.
-     * @return \Nohex\Eix\Core\Responses\Http
+     * @return Http
      */
     protected function getBatchActionConfirmationResponse($actionId, array $selectedIds)
     {
@@ -156,7 +272,7 @@ abstract class CollectionManager extends CollectionBrowser implements Restricted
             $response = $this->getIndexRedirectionResponse();
         } else {
             // There are IDs, so display the confirmation page.
-            $response = $this->getHtmlResponse($this->getRequest());
+            $response = $this->getHtmlResponse();
             $collectionName = $this->getCollectionName();
             $response->setTemplateId(sprintf('%s/%s',
                 $collectionName,
@@ -244,23 +360,23 @@ abstract class CollectionManager extends CollectionBrowser implements Restricted
 
     /**
      * Return a response that shows an edition page.
-     * @param  type                                $id the ID of the entity to edit, if any.
-     * @return \Nohex\Eix\Core\Responses\Http\Html
+     * @param  type $id the ID of the entity to edit, if any.
+     * @return Html
      */
-    private function getEditionResponse($id = null)
+    protected function getEditionResponse(Entity $entity = null)
     {
         // Create a new HTML response.
-        $response = $this->getHtmlResponse($this->getRequest());
+        $response = $this->getHtmlResponse();
         // Indicate where is the template.
         $response->setTemplateId(sprintf(
             '%s/edit',
             $this->getCollectionName()
         ));
         // If there is an entity ID, load that entity in the response as well.
-        if ($id) {
+        if ($entity) {
             $response->setData(
                 $this->getItemName(),
-                $this->getEntity($id)
+                $entity->getFieldsData()
             );
         }
 
@@ -274,10 +390,9 @@ abstract class CollectionManager extends CollectionBrowser implements Restricted
     private function getUpdatedEntityResponse()
     {
         $response = $this->getEditionResponse();
-        $entityData = null;
         try {
             // Try to store an entity with the data in the request.
-            $entityData = $this->storeEntity();
+            $this->storeEntity();
             $response->addNotice(sprintf(
                 _('%s correctly stored.'),
                 ucfirst($this->getItemName())
@@ -319,4 +434,17 @@ abstract class CollectionManager extends CollectionBrowser implements Restricted
         return $ids;
     }
 
+
+    /**
+     * Override the original template identifier retrieval for entity edit
+     * pages.
+     * @return string
+     */
+    protected function getViewTemplateId()
+    {
+        return sprintf(
+            '%s/edit',
+            $this->getCollectionName()
+        );
+    }
 }

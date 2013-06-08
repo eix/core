@@ -13,6 +13,8 @@ abstract class Factory
 {
     const ENTITIES_CLASS_NAME = '\\stdClass';
 
+    private static $entitiesClassNames;
+
     protected $dataSource;
 
     /**
@@ -115,7 +117,7 @@ abstract class Factory
                 'Entity %s is not cached. Retrieving...',
                 $id
             ));
-            $className = static::ENTITIES_CLASS_NAME;
+            $className = static::getEntitiesClassName();
             $data = $this->getDataSource()->retrieve($id);
 
             if (is_array($data)) {
@@ -166,7 +168,7 @@ abstract class Factory
      */
     public function getAll($filter = null)
     {
-        $className = static::ENTITIES_CLASS_NAME;
+        $className = self::getEntitiesClassName();
         $results = $this->getDataSource()->retrieveAll($filter);
 
         // Convert the resulting data to entities.
@@ -193,5 +195,24 @@ abstract class Factory
     public static function getCount(array $options = array())
     {
         return static::getInstance()->getDataSource()->getCount($options);
+    }
+
+    public static function getEntitiesClassName()
+    {
+        $currentClass = get_called_class();
+
+        if (empty(self::$entitiesClassNames[$currentClass])) {
+            // Fail over to a class constant, if no customisation has been
+            // performed.
+            self::$entitiesClassNames[$currentClass] = static::ENTITIES_CLASS_NAME;
+        }
+
+        return self::$entitiesClassNames[$currentClass];
+    }
+
+    public static function setEntitiesClassName($className)
+    {
+        $currentClass = get_called_class();
+        self::$entitiesClassNames[$currentClass] = $className;
     }
 }
