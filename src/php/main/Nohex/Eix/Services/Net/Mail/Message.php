@@ -16,7 +16,7 @@ class Message
     private $contentType = 'text/plain';
     private $hasAttachments = false;
     public $subject;
-    public $charset = 'us-ascii';
+    public $charset = 'utf-8';
 
     public function setSender($address, $name = null)
     {
