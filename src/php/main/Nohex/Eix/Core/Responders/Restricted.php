@@ -1,11 +1,11 @@
 <?php
-/**
- * This interface is implemented by responders that require permission from the
- * current user to execute any of its methods.
- */
 
 namespace Nohex\Eix\Core\Responders;
 
+/**
+ * This interface is implemented by responders that require the user to be
+ * authorised to execute any of its methods.
+ */
 interface Restricted
 {
 }

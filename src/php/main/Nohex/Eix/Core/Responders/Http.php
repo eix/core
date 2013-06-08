@@ -27,8 +27,6 @@ abstract class Http implements \Nohex\Eix\Core\Responder
                 );
             }
         }
-
-     Logger::get()->debug('Using responder ' . get_class($this));
     }
 
     /**
@@ -63,7 +61,7 @@ abstract class Http implements \Nohex\Eix\Core\Responder
 
             if ($this->isHttpMethodSupported($httpMethod)) {
                 $functionName = $this->getFunctionName($httpMethod);
-             Logger::get()->debug("Running responder method '$functionName'...");
+                Logger::get()->debug("Running responder method '$functionName'...");
                 // If the responder is a restricted one...
                 if ($this instanceof \Nohex\Eix\Core\Responders\Restricted) {
                     // ... ensure the user is allowed to use that function.
@@ -118,7 +116,7 @@ abstract class Http implements \Nohex\Eix\Core\Responder
                     $contentTypeToken = \Nohex\Eix\Core\Requests\Http::getContentTypeToken($contentType);
                     // Append the token for the response's expected content type.
                     $functionName = $functionPrefix . 'For' . $contentTypeToken;
-                 Logger::get()->debug("Trying {$functionName} for {$contentType}...");
+                    Logger::get()->debug("Trying {$functionName} for {$contentType}...");
                     // Check whether a method with that name exists.
                     if (method_exists($this, $functionName)) {
                         return $functionName;

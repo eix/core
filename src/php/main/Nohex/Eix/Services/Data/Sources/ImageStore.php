@@ -50,7 +50,7 @@ class ImageStore implements DataSource
         $id = @$data['id'];
         if (!$id) {
             throw new \InvalidArgumentException(
-                'The image does not have an ID.'
+            'The image does not have an ID.'
             );
         }
 
@@ -61,7 +61,7 @@ class ImageStore implements DataSource
 
     public function retrieve($id)
     {
-     Logger::get()->debug("Retrieving image {$id}...");
+        Logger::get()->debug("Retrieving image {$id}...");
 
         $location = $this->getAssetLocation($id);
         if (!is_readable($location)) {
@@ -93,7 +93,7 @@ class ImageStore implements DataSource
 
     public function update($id, array $data)
     {
-     Logger::get()->debug("Storing image {$id}...");
+        Logger::get()->debug("Storing image {$id}...");
 
         $sourceLocation = @$data['location'];
         if ($sourceLocation) {
@@ -112,45 +112,42 @@ class ImageStore implements DataSource
                 $result = copy($sourceLocation, $targetLocation . '/original');
                 // The image is then stored in every size used in the application, as
                 // resizing them on the fly is very expensive.
-                foreach ($this->alternativeImageSizes as $size) {
+                foreach ($this->alternativeImageSizes as $targetSize) {
                     $image = new \Imagick($sourceLocation);
+                    $image->setImageFormat('png');
                     // Resize the image.
                     $image->resizeImage(
-                        $size,
-                        $size,
-                        \Imagick::FILTER_CATROM,
-                        1,
-                        true
+                            $targetSize, $targetSize, \Imagick::FILTER_CATROM, 1, true
                     );
                     // Apply rounder corners.
-                    $image->roundCorners($size / 18, $size / 18);
+                    $image->roundCorners($targetSize / 18, $targetSize / 18);
+                    // Overlay the image on the background.
                     // Save the results.
-                    $image->writeImage($targetLocation . "/{$size}");
+                    $image->writeImage($targetLocation . "/{$targetSize}");
                 }
             }
         } else {
             throw new \InvalidArgumentException(
-                'There is no image to store.'
+            'There is no image to store.'
             );
         }
 
         if ($result) {
-         Logger::get()->debug('Stored.');
+            Logger::get()->debug('Stored.');
         } else {
             throw new Exception('The image could not be stored.');
         }
 
         return $result;
-
     }
 
     public function destroy($id)
     {
-     Logger::get()->debug("Deleting image {$id}...");
+        Logger::get()->debug("Deleting image {$id}...");
 
         unlink($this->getAssetLocation($id));
 
-     Logger::get()->debug('Deleted.');
+        Logger::get()->debug('Deleted.');
 
         return true;
     }
@@ -165,4 +162,4 @@ class ImageStore implements DataSource
         $this->alternativeImageSizes = $alternativeImageSizes;
     }
 
- }
+}

@@ -162,6 +162,8 @@ abstract class Application
             // signing in.
             $this->keepCurrentLocator($request);
             // Request identification from the user.
+            // Set the method to GET for the identity request. POST is reserved
+            // for the actual posting of the identity data by the user.
             $request->setMethod(HttpRequest::HTTP_METHOD_GET);
             $responder = new IdentityResponder($request);
             $response = $responder->getResponse();
