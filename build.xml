@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project default="build">
 	<!-- Phing build script for libraries -->
+	
+	<fail unless="env.EIX_WORKSPACE" msg="The Eix workspace environment variable is not set." />
 
 	<!-- Set common properties -->
-	<property name="repository" value="/mnt/workspace/nohex-repository" />
+	<property name="repository" value="${env.EIX_WORKSPACE}/nohex-repository" />
 	<property name="srcDir" value="src/php" />
 	<property name="mainSrcDir" value="${srcDir}/main" />
 	<property name="testDir" value="${srcDir}/test" />
