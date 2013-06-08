@@ -110,16 +110,18 @@ class XslPage extends WebPage
      */
     protected function addData($name, $value)
     {
-        if (is_array($value)) {
-            $this->dataDocument->addArray(self::DATA_PATH_ROOT, $value, $name);
-        } elseif ($value instanceof DOMNodeList) {
-            $this->dataDocument->copyNodes(self::DATA_PATH_ROOT, $value);
-        } elseif ($value instanceof Library\Dom) {
-            $this->dataDocument->copyNodes(self::DATA_PATH_ROOT, $value->getNodes('/'));
-        } elseif (is_object($value)) {
-            $this->dataDocument->addObject(self::DATA_PATH_ROOT, $value, $name);
-        } else {
-            $this->dataDocument->addNode(self::DATA_PATH_ROOT, $name, $value);
+        if (!empty($name)) {
+            if (is_array($value)) {
+                $this->dataDocument->addArray(self::DATA_PATH_ROOT, $value, $name);
+            } elseif ($value instanceof DOMNodeList) {
+                $this->dataDocument->copyNodes(self::DATA_PATH_ROOT, $value);
+            } elseif ($value instanceof Library\Dom) {
+                $this->dataDocument->copyNodes(self::DATA_PATH_ROOT, $value->getNodes('/'));
+            } elseif (is_object($value)) {
+                $this->dataDocument->addObject(self::DATA_PATH_ROOT, $value, $name);
+            } else {
+                $this->dataDocument->addNode(self::DATA_PATH_ROOT, $name, $value);
+            }
         }
     }
 
