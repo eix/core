@@ -69,7 +69,10 @@
 		depends="getlibs"
 	>
 		<mkdir dir="${reportsDir}" />
-
+		<phplint haltonfailure="true">
+			<fileset refid="main" />
+			<fileset refid="devel" />
+		</phplint>
 <!--
 		<phpcodesniffer
 			standard="PSR2"
@@ -141,7 +144,7 @@
 		description="Prepare the build environment"
 	>
 		<!-- Ensure the build folder is clean -->
-		<delete dir="${buildDir}" />
+		<delete dir="${buildDir}" quiet="true" />
 		<!-- Ensure the build folder exists -->
 		<mkdir dir="${buildDir}" />
 	</target>
@@ -168,7 +171,7 @@
 
 		<!-- Prepare main target folder. -->
 		<property name="targetDir" value="${targetsDir}/${type}" />
-		<delete dir="${targetDir}" />
+		<delete dir="${targetDir}" quiet="true" />
 		<mkdir dir="${targetDir}" />
 		<copy todir="${targetDir}">
 			<fileset refid="bootstrap" />
