@@ -18,6 +18,10 @@
 	strict="true"
 	verbose="true"
 >
+	<php>
+		<env name="EIX_ENV" value="test" />
+	</php>
+
 	<testsuites>
 		<testsuite name="full">
 			<directory suffix="Test.php">src/php/test</directory>
