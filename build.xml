@@ -4,27 +4,14 @@
 	
 	<!-- Set common properties -->
 	<property name="srcDir" value="src/php" />
-	<property name="mainSrcDir" value="${srcDir}/main" />
 	<property name="testDir" value="${srcDir}/test" />
-	<property name="libDir" value="${srcDir}/lib" />
 	<property name="buildDir" value="build" />
 	<property name="reportsDir" value="${buildDir}/reports" />
-	<property name="targetsDir" value="${buildDir}/targets" />
-	<property name="distFileName" value="${phing.project.name}-${version}" />
-	<property name="distFileType" value="phar" />
-
-	<!-- Import custom properties -->
-	<property file="phing.properties" />
 
 	<!-- Define project file locations and sets -->
 
 	<fileset dir="${srcDir}" id="phpFiles">
 		<include name="**/*.php" />
-	</fileset>
-
-	<fileset dir="${srcDir}" id="bootstrap">
-		<include name="bootstrap.php" />
-		<include name="phar_stub.php" />
 	</fileset>
 
 	<fileset dir="${srcDir}" id="main">
@@ -33,12 +20,6 @@
 
 	<fileset dir="${srcDir}" id="devel">
 		<include name="test/**/*.php" />
-	</fileset>
-
-	<fileset dir="${libDir}" id="lib">
-		<include name="**.php" />
-		<!-- Phars can't have phars within them -->
-		<exclude name="**.phar" />
 	</fileset>
 
 	<!-- Targets -->
@@ -133,6 +114,16 @@
 				</fileset>
 			</batchtest>
 		</phpunit>
+	</target>
+
+	<target name="build"
+		description="Package the contents of the library"
+		depends="test"
+	>
+		<composer command="package">
+			<arg value="--format=zip" />
+			<arg value="--dir=build" />
+		</composer>
 	</target>
 
 </project>

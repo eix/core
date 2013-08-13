@@ -115,7 +115,7 @@ abstract class CollectionBrowser extends HttpResponder
      * @return Factory
      * @throws Exception
      */
-    protected function getFactory()
+    public final function getFactory()
     {
         $calledClass = get_called_class();
         if (empty(self::$factories[$calledClass])) {

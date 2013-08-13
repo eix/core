@@ -94,6 +94,11 @@ class Error extends HttpResponder
     public function getException()
     {
         if (!($this->exception) instanceof \Exception) {
+            if (@$_SERVER['EIX_ENV'] == 'dev') {
+                echo '<pre>';
+                debug_print_backtrace();
+                die;
+            }
             throw new \RuntimeException('This responder needs an exception.');
         }
 

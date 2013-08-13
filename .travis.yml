@@ -1,5 +1,10 @@
 language: php
+
 php:
   - 5.3
+
 env:
   - EIX_ENV=TEST
+
+before_install:
+  - composer update
