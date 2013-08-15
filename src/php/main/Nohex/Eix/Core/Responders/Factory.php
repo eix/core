@@ -3,7 +3,6 @@
 namespace Nohex\Eix\Core\Responders;
 
 use Nohex\Eix\Core\Request;
-use Nohex\Eix\Core\ClassLoader;
 use Nohex\Eix\Core\Requests\Http as HttpRequest;
 use Nohex\Eix\Services\Log\Logger;
 
@@ -64,7 +63,7 @@ class Factory
         $responder = null;
 
         $responderClassName = $request->getResponderClassName();
-        if (ClassLoader::isClassAvailable($responderClassName)) {
+        if (class_exists($responderClassName)) {
             $responder = new $responderClassName($request);
             Logger::get()->debug(
                 "Responder '$responderClassName' is ready."
