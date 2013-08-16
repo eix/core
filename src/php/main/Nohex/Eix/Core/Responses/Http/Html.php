@@ -45,7 +45,7 @@ class Html extends \Nohex\Eix\Core\Responses\Http
             'template' => str_replace(array('.', '/'), '_', $this->templateId),
             // Inform about the page's content type.
             'contentType' => $this->getContentType(),
-            'url' => $this->getRequest()->getCurrentUrl(),
+            'url' => $this->getRequest() ? $this->getRequest()->getCurrentUrl() : '',
         ));
 
         // If there are status messages left in the session by a Redirection

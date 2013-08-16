@@ -158,6 +158,11 @@ class Settings
                 ?: @$_SERVER['EIX_ENV']
                 ?: @$_ENV['EIX_ENV']
             ;
+            
+            // If the environment cannot be inferred, halt the application.
+            if (empty(self::$environment)) {
+                throw new Exception('Eix environment is not set.');
+            }
         }
 
         return self::$environment;

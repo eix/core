@@ -249,12 +249,17 @@ abstract class Application
      */
     public function handleException($exception)
     {
-        // Captured application-level exception.
+        // Captured an application-level exception.
         try {
-            // Try to handle gracefully.
+            // Log the exception.
             Logger::get()->exception($exception);
+            // Try to display a user-friendly message.
             $responder = new Responders\Http\Error;
+            $responder->setException($exception);
             $responder->getResponse()->issue();
+            // Stop the application, as it did not handle the exception
+            // properly.
+            die(-1);
         } catch (Exception $innerException) {
             $this->fail($innerException);
         }
