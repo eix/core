@@ -16,6 +16,8 @@ use Nohex\Eix\Core\Requests\Http as HttpRequest;
 abstract class Application
 {
     const LOCATOR_COOKIE_NAME = 'eix-locator';
+    const TEXT_DOMAIN_NAME = 'messages';
+    const TEXT_DOMAIN_LOCATION = '../data/resources/locale/';
 
     private static $instance;
     private $settings;
@@ -56,7 +58,7 @@ abstract class Application
         if (empty(self::$instance)) {
             self::setCurrent($this);
         }
-
+        
         // Start a session, if possible.
         @session_start();
 
@@ -321,7 +323,7 @@ abstract class Application
      * Sets the locale of the application, if this locale is available.
      * @param string $locale the new locale.
      */
-    public function setLocale($locale)
+    public function setLocale($locale = null)
     {
         $availableLocales = $this->getAvailableLocales();
 
@@ -334,11 +336,16 @@ abstract class Application
             );
         }
 
-        // if (empty($this->locale)) {
+        if (empty($this->locale)) {
             $this->locale = $this->getSettings()->locale->default;
-        // }
+        }
 
+        putenv('LANG=' . $this->locale);
+        putenv('LANGUAGE=' . $this->locale);
         setlocale(LC_ALL, $this->locale);
+        bindtextdomain(self::TEXT_DOMAIN_NAME, self::TEXT_DOMAIN_LOCATION);
+        bind_textdomain_codeset(self::TEXT_DOMAIN_NAME, 'UTF-8');
+        textdomain(self::TEXT_DOMAIN_NAME);
 
         Logger::get()->info("Locale is now {$this->locale}.");
     }
@@ -352,8 +359,8 @@ abstract class Application
         // Ensure a location is not already set, to avoid overwriting it.
         if (!@$_COOKIE[self::LOCATOR_COOKIE_NAME]) {
             $currentUrl = $request->getCurrentUrl();
-            // Do not keep OpenID callbacks.
-            if (!preg_match('#/identity/openid.+#', $currentUrl)) {
+            // Do not keep identity URLs.
+            if (!preg_match('#/identity.+#', $currentUrl)) {
                 setcookie(
                     self::LOCATOR_COOKIE_NAME,
                     $currentUrl,
