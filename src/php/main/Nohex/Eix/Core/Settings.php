@@ -73,7 +73,7 @@ class Settings
                     if (is_readable($environmentSettingsLocation)) {
                         $environmentSettings = json_decode(file_get_contents($environmentSettingsLocation), true);
                         if (!empty($environmentSettings)) {
-                            $settings = array_merge_recursive($settings, $environmentSettings);
+                            $settings =self::mergeSettings($settings, $environmentSettings);
                         }
                     }
                 }
@@ -166,5 +166,28 @@ class Settings
         }
 
         return self::$environment;
+    }
+
+    /**
+     * Merges two arrays, just like array_merge_recursive, but the second array
+     * overwrites the first one's values if there is a match.
+     */
+    public static function mergeSettings($generalSettings, $environmentSettings)
+    {
+        $mergedSettings = $generalSettings;
+
+        foreach ($environmentSettings as $key => &$value) {
+            if (
+                is_array($value)
+                && isset($mergedSettings[$key])
+                && is_array($mergedSettings [$key])
+            ) {
+                $mergedSettings[$key] = self::mergeSettings($mergedSettings[$key], $value);
+            } else {
+                $mergedSettings [$key] = $value;
+            }
+        }
+
+        return $mergedSettings;
     }
 }

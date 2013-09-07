@@ -55,4 +55,26 @@ class SettingsTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals($settings->application->id, 'mick');
     }
+    
+    public function testMergeSettings() {
+        $array1 = [
+            'key1' => 'value1',
+            'matching_key' => 'another_value',
+        ];
+
+        $array2 = [
+            'key2' => 'value2',
+            'matching_key' => 'replaced_value',
+        ];
+        
+        $expectedArray = [
+            'key1' => 'value1',
+            'key2' => 'value2',
+            'matching_key' => 'replaced_value',
+        ];
+        
+        $mergedArray = Settings::mergeSettings($array1, $array2);
+
+        $this->assertEquals($mergedArray, $expectedArray);
+    }
 }
