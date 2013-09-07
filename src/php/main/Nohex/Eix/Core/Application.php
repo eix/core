@@ -325,11 +325,9 @@ abstract class Application
      */
     public function setLocale($locale = null)
     {
-        $availableLocales = $this->getAvailableLocales();
-
         if (class_exists('\Locale')) {
             $this->locale = \Locale::lookup(
-                $availableLocales,
+                $this->getAvailableLocales(),
                 $locale,
                 false,
                 $this->getSettings()->locale->default
@@ -340,14 +338,20 @@ abstract class Application
             $this->locale = $this->getSettings()->locale->default;
         }
 
+        // Set up locale environment for gettext.
         putenv('LANG=' . $this->locale);
         putenv('LANGUAGE=' . $this->locale);
+        putenv('LC_ALL=' . $this->locale);
         setlocale(LC_ALL, $this->locale);
         bindtextdomain(self::TEXT_DOMAIN_NAME, self::TEXT_DOMAIN_LOCATION);
         bind_textdomain_codeset(self::TEXT_DOMAIN_NAME, 'UTF-8');
         textdomain(self::TEXT_DOMAIN_NAME);
 
-        Logger::get()->info("Locale is now {$this->locale}.");
+        Logger::get()->info(sprintf('Locale is now %s (domain "%s" at %s)',
+            $this->locale,
+            self::TEXT_DOMAIN_NAME,
+            self::TEXT_DOMAIN_LOCATION
+        ));
     }
 
     /**
