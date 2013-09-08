@@ -49,11 +49,29 @@ class XslPage extends WebPage
 
     private function getTemplateLocation()
     {
-        return sprintf('%s/%s/%s.xsl',
+        // Try with full locale.
+        $location = sprintf('%s/%s/%s.xsl',
             self::$pagesLocation,
             self::$locale,
             $this->templateId
         );
+
+        // If the template is not readable...
+        if (!is_readable($location)) {
+            // ... and the locale carries a country code, remove it and try again.
+            $underscorePosition = strpos(self::$locale, '_');
+            if ($underscorePosition > 0) {
+                $locale = substr(self::$locale, 0, $underscorePosition);
+                // Try with partial locale.
+                $location = sprintf('%s/%s/%s.xsl',
+                    self::$pagesLocation,
+                    $locale,
+                    $this->templateId
+                );
+            }
+        }
+
+        return $location;
     }
 
     /*

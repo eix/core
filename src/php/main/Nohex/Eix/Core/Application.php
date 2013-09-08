@@ -329,7 +329,7 @@ abstract class Application
             $this->locale = \Locale::lookup(
                 $this->getAvailableLocales(),
                 $locale,
-                false,
+                true,
                 $this->getSettings()->locale->default
             );
         }
@@ -339,18 +339,18 @@ abstract class Application
         }
 
         // Set up locale environment for gettext.
-        putenv('LANG=' . $this->locale);
-        putenv('LANGUAGE=' . $this->locale);
-        putenv('LC_ALL=' . $this->locale);
-        setlocale(LC_ALL, $this->locale);
         bindtextdomain(self::TEXT_DOMAIN_NAME, self::TEXT_DOMAIN_LOCATION);
         bind_textdomain_codeset(self::TEXT_DOMAIN_NAME, 'UTF-8');
         textdomain(self::TEXT_DOMAIN_NAME);
+        putenv('LANG=' . $this->locale);
+        putenv('LC_MESSAGES=' . $this->locale);
+        $locale = setlocale(LC_MESSAGES, $this->locale);
 
-        Logger::get()->info(sprintf('Locale is now %s (domain "%s" at %s)',
+        Logger::get()->info(sprintf('Locale is now %s [%s] (domain "%s" at %s)',
+            $locale,
             $this->locale,
             self::TEXT_DOMAIN_NAME,
-            self::TEXT_DOMAIN_LOCATION
+            realpath(self::TEXT_DOMAIN_LOCATION)
         ));
     }
 
