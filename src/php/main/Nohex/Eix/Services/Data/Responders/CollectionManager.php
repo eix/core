@@ -19,6 +19,10 @@ abstract class CollectionManager extends CollectionBrowser implements Restricted
 {
     private $collectionBrowser;
 
+    // Whether null values are ignored when storing. By default it is false,
+    // which means that null values will set their associated field to null.
+    protected $nullsIgnoredOnStore = false;
+
     /**
      * Get this collection manager's underlying collection browser.
      *
@@ -131,8 +135,19 @@ abstract class CollectionManager extends CollectionBrowser implements Restricted
         }
 
 
+        // Get the data from the request.
+        $dataFromRequest = $this->getEntityDataFromRequest();
+        if ($this->nullsIgnoredOnStore) {
+            // Remove unspecified values, so that they are not modified.
+            $dataFromRequest = array_filter(
+                $dataFromRequest,
+                function ($value) {
+                    return !is_null($value);
+                }
+            );
+        }
         // Update the product from the request data.
-        $entity->update($this->getEntityDataFromRequest());
+        $entity->update($dataFromRequest);
         // Store the entity.
         $entity->store();
 
