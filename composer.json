@@ -14,8 +14,9 @@
         }
     ],
 	"require": {
-		"php": ">=5.3.0",
+		"php": ">=5.4",
 		"ext-xsl": ">0",
+		"ext-intl": ">0",
 		"ext-json": ">0"
 	},
     "support": {
