@@ -29,7 +29,7 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase
         $settings->application->rawErrors = 'on';
         $application = new MockApplication($settings);
 
-        $currentHandler = set_error_handler('handler');
+        $currentHandler = set_error_handler(function() {});
         restore_error_handler();
         $this->assertNotNull($currentHandler, 'The error handler was not assigned.');
 
@@ -46,7 +46,7 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase
         $settings->application->rawErrors = 'on';
         $application = new MockApplication($settings);
 
-        $currentHandler = set_exception_handler('handler');
+        $currentHandler = set_exception_handler(function() {});
         restore_exception_handler();
         $this->assertNull($currentHandler, 'The exception handler is assigned.');
 
