@@ -1,5 +1,5 @@
 {
-    "name": "nohex/eix",
+    "name": "eix/core",
     "description": "Eix is a PHP-based framework for building web applications.",
     "type": "library",
     "keywords": ["framework"],
@@ -9,7 +9,7 @@
     "authors": [
         {
             "name": "Max Noé",
-            "email": "max@nohex.com",
+            "email": "github@0h.com",
             "role": "Developer"
         }
     ],
@@ -19,13 +19,16 @@
 		"ext-intl": ">0",
 		"ext-json": ">0"
 	},
+    "require-dev": {
+        "phpunit/phpunit": "~4.7"
+    },
     "support": {
-        "issues": "https://github.com/nohex/eix",
-        "source": "https://github.com/nohex/eix"
+        "issues": "https://github.com/eix/core",
+        "source": "https://github.com/eix/core"
     },
     "autoload": {
         "psr-0": {
-            "Nohex\\": [
+            "Eix\\": [
 				"src/php/main",
 				"src/php/test"
 			]
