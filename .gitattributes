@@ -1,7 +1,6 @@
 /src/php/lib/ export-ignore
 /src/php/test/ export-ignore
 /.travis.yml export-ignore
-/.composer.* export-ignore
 /phpunit.xml export-ignore
 /build.xml export-ignore
 /data export-ignore
