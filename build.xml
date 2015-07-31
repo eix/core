@@ -1,12 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project default="build">
+<project name="eix-core" default="build">
 	<!-- Phing build script for libraries -->
-	
+
 	<!-- Set common properties -->
+	<property name="repository" value="${user.home}/.eix/repository" />
 	<property name="srcDir" value="src/php" />
 	<property name="testDir" value="${srcDir}/test" />
 	<property name="buildDir" value="build" />
 	<property name="reportsDir" value="${buildDir}/reports" />
+	<property name="distFileName" value="${phing.project.name}-${version}" />
+	<property name="distFileType" value="zip" />
+	<property name="version" value="dev-master" />
 
 	<!-- Define project file locations and sets -->
 
@@ -23,41 +27,33 @@
 	</fileset>
 
 	<!-- Targets -->
-
-	<target name="getlibs"
-		description="Bring in all reported dependencies"
-	>
-		<!-- If there are dependencies, bring them in. -->
-		<composer command="update" />
-	</target>
-
-	<target name="check"
-		description="Ensure code quality"
-		depends="getlibs"
+	<target name="report"
+		description="Report on code quality"
 	>
 		<mkdir dir="${reportsDir}" />
-		<phplint haltonfailure="true">
-			<fileset refid="main" />
-			<fileset refid="devel" />
-		</phplint>
-<!--
-		<phpcodesniffer
-			standard="PSR2"
-			format="full"
-			docFile="${reportsDir}/codesniffer.log"
-			allowedFileExtensions="php js css html"
-		>
-			<fileset refid="phpFiles" />
-		</phpcodesniffer>
--->
+
+		<!--
+                <phpcodesniffer
+                    standard="PSR2"
+                    format="full"
+                    docFile="${reportsDir}/codesniffer.log"
+                    allowedFileExtensions="php js css html"
+                >
+                    <fileset refid="phpFiles" />
+                </phpcodesniffer>
+        -->
 
 		<!-- Measure project size using PHPLOC -->
-		<exec executable="phploc" checkreturn="true" level="debug">
-			<arg value="--log-csv"/>
-			<arg value="${reportsDir}/phploc.csv"/>
-			<arg path="${srcDir}"/>
-		</exec>
- 
+		<phploc
+            reportType="txt"
+            reportDirectory="${reportsDir}"
+            reportName="phploc"
+		>
+				<fileset dir="${srcDir}">
+					<include name="**/*.php" />
+				</fileset>
+		</phploc>
+
 		<!-- Calculate software metrics using PHP_Depend -->
 		<phpdepend>
 			<fileset refid="main" />
@@ -66,7 +62,7 @@
 			<logger type="jdepend-chart" outfile="${reportsDir}/dependencies.svg"/>
 			<logger type="overview-pyramid" outfile="${reportsDir}/overview-pyramid.svg"/>
 		</phpdepend>
- 
+
 		<!-- Perform project mess detection using PHPMD -->
 		<phpmd rulesets="codesize,design,naming,unusedcode">
 			<fileset refid="phpFiles"/>
@@ -78,15 +74,15 @@
 			<fileset refid="phpFiles"/>
 			<formatter type="pmd" outfile="${reportsDir}/pmd-cpd.xml"/>
 		</phpcpd>
-	
+
 		<!-- Aggregate tool output with PHP_CodeBrowser -->
 		<mkdir dir="${reportsDir}/cb" />
-		<exec executable="phpcb" logoutput="true" checkreturn="true" level="debug">
-			<arg value="--log"/>
+		<exec executable="src/php/lib/mayflower/php-codebrowser/bin/phpcb" logoutput="true" checkreturn="true" level="debug">
+			<arg value="- -log"/>
 			<arg path="${reportsDir}"/>
-			<arg value="--source"/>
+			<arg value="- -source"/>
 			<arg path="${srcDir}"/>
-			<arg value="--output"/>
+			<arg value="- -output"/>
 			<arg path="${reportsDir}/cb"/>
 		</exec>
 	</target>
@@ -102,28 +98,69 @@
 
 	<target name="test"
 		description="Run unit tests"
-		depends="check,clean"
+		depends="clean"
 	>
+		<phplint haltonfailure="true">
+			<fileset refid="main" />
+			<fileset refid="devel" />
+		</phplint>
+
+		<exec
+			executable="src/php/lib/phpunit/phpunit/phpunit"
+			passthru="true"
+			checkreturn="true"
+		/>
+		<!--
 		<phpunit
 			configuration="phpunit.xml"
-			printsummary="true"
-		>
-			<batchtest>
-				<fileset dir="${testDir}">
-					<include name="**/*Test.php"/>
-				</fileset>
-			</batchtest>
-		</phpunit>
+			pharlocation="src/php/lib/phpunit/phpunit/phpunit"
+		/>
+		-->
 	</target>
 
-	<target name="build"
-		description="Package the contents of the library"
-		depends="test"
+	<target name="quickbuild"
+			description="A quick build without tests or reports"
 	>
-		<composer command="package">
+		<phingcall target="_build"/>
+	</target>
+
+	<!-- A full build -->
+	<target name="build"
+			description="A full build"
+			depends="test,report"
+	>
+		<phingcall target="_build"/>
+	</target>
+
+	<target name="_build"
+		description="Package the contents of the library"
+	>
+		<composer
+				command="archive"
+				composer="/usr/local/bin/composer"
+		>
 			<arg value="--format=zip" />
 			<arg value="--dir=build" />
 		</composer>
+	</target>
+
+	<target name="publish"
+		description="Make the packages available in the repository"
+		depends="build"
+	>
+		<mkdir dir="${repository}" />
+		<echo>
+			Copying ${distFileName}.${distFileType} to ${repository}...
+		</echo>
+		<copy
+			todir="${repository}"
+			haltonerror="true"
+		>
+			<fileset dir="${buildDir}">
+				<include name="${distFileName}*.${distFileType}" />
+			</fileset>
+		</copy>
+		<echo>Done.</echo>
 	</target>
 
 </project>
