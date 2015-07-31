@@ -18,7 +18,7 @@ class Settings
      *
      * @param mixed $source a location where settings can be loaded, or an
      * object or array with settings.
-     * @param string $environment the environment the settings
+     * @throws Settings\Exception
      */
     public function __construct($source = null)
     {
@@ -44,7 +44,8 @@ class Settings
     /**
      * Load settings from a file.
      *
-     * @param string $source The location of the settings file.
+     * @param string $location The location of the settings file.
+     * @throws Settings\Exception
      */
     private function loadFromLocation($location)
     {
@@ -73,7 +74,7 @@ class Settings
                     if (is_readable($environmentSettingsLocation)) {
                         $environmentSettings = json_decode(file_get_contents($environmentSettingsLocation), true);
                         if (!empty($environmentSettings)) {
-                            $settings =self::mergeSettings($settings, $environmentSettings);
+                            $settings = self::mergeSettings($settings, $environmentSettings);
                         }
                     }
                 }
@@ -104,6 +105,8 @@ class Settings
 
     /**
      * Allow settings to be set directly using their keys as members.
+     * @param string $key the setting key
+     * @param mixed $value the setting value
      */
     public function __set($key, $value)
     {
@@ -113,8 +116,13 @@ class Settings
     /**
      * Convenience function that allows querying the settings by
      * using their ID as a member.
+     *
      * Please note that retrieving an unknown value in this fashion
      * will result in an exception.
+     *
+     * @param string $settingId the setting key
+     * @return mixed the setting value
+     * @throws Settings\Exception
      */
     public function __get($settingId)
     {
@@ -123,6 +131,8 @@ class Settings
 
     /**
      * Converts an array to an object recursively.
+     * @param array $array the array to convert
+     * @return object the converted array
      */
     private static function objectify(array $array)
     {
@@ -132,7 +142,7 @@ class Settings
             }
         }
 
-        return (object) $array;
+        return (object)$array;
     }
 
     /**
@@ -143,7 +153,6 @@ class Settings
     public static function setEnvironment($environment)
     {
         self::$environment = $environment;
-        // TODO: Invalidate settings?
     }
 
     /**
@@ -156,12 +165,11 @@ class Settings
         if (empty(self::$environment)) {
             self::$environment = getenv('EIX_ENV')
                 ?: @$_SERVER['EIX_ENV']
-                ?: @$_ENV['EIX_ENV']
-            ;
-            
-            // If the environment cannot be inferred, halt the application.
+                    ?: @$_ENV['EIX_ENV'];
+
+            // If the environment cannot be inferred, assume production.
             if (empty(self::$environment)) {
-                throw new Exception('Eix environment is not set.');
+                self::$environment = 'pro';
             }
         }
 
@@ -171,6 +179,10 @@ class Settings
     /**
      * Merges two arrays, just like array_merge_recursive, but the second array
      * overwrites the first one's values if there is a match.
+     *
+     * @param array $generalSettings the base array
+     * @param array $environmentSettings the overwriting array
+     * @return array the merged settings.
      */
     public static function mergeSettings($generalSettings, $environmentSettings)
     {
