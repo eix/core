@@ -24,8 +24,12 @@
     "vendor-dir": "src/php/lib"
   },
   "autoload": {
-    "psr-4": {
-      "Eix\\": "src/php/main",
+    "psr-0": {
+      "Eix\\": "src/php/main"
+    }
+  },
+  "autoload-dev": {
+    "psr-0": {
       "Eix\\": "src/php/test"
     }
   },
