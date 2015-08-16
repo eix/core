@@ -41,6 +41,12 @@
   },
   "require-dev": {
     "phing/phing": "*",
-    "phpunit/phpunit": "~4.7"
+    "phpunit/phpunit": "~4.7",
+    "phplint/phplint": "*",
+    "phploc/phploc": "*",
+    "pdepend/pdepend": "*",
+    "phpmd/phpmd": "*",
+    "sebastian/phpcpd": "*",
+    "mayflower/php-codebrowser": "*"
   }
 }
