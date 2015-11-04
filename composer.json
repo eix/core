@@ -44,8 +44,6 @@
     "phpunit/phpunit": "~4.7",
     "phplint/phplint": "*",
     "phploc/phploc": "*",
-    "pdepend/pdepend": "*",
-    "phpmd/phpmd": "*",
     "sebastian/phpcpd": "*",
     "mayflower/php-codebrowser": "*"
   }

@@ -1,166 +1,138 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="eix-core" default="build">
-	<!-- Phing build script for libraries -->
+    <!-- Phing build script for libraries -->
 
-	<!-- Set common properties -->
-	<property name="repository" value="${user.home}/.eix/repository" />
-	<property name="srcDir" value="src/php" />
-	<property name="testDir" value="${srcDir}/test" />
-	<property name="buildDir" value="build" />
-	<property name="reportsDir" value="${buildDir}/reports" />
-	<property name="distFileName" value="${phing.project.name}-${version}" />
-	<property name="distFileType" value="zip" />
-	<property name="version" value="dev-master" />
+    <!-- Set common properties -->
+    <property name="repository" value="${user.home}/.eix/repository"/>
+    <property name="srcDir" value="src/php"/>
+    <property name="testDir" value="${srcDir}/test"/>
+    <property name="buildDir" value="build"/>
+    <property name="reportsDir" value="${buildDir}/reports"/>
+    <property name="distFileName" value="${phing.project.name}-${version}"/>
+    <property name="distFileType" value="zip"/>
+    <property name="version" value="dev-master"/>
 
-	<!-- Define project file locations and sets -->
+    <!-- Define project file locations and sets -->
 
-	<fileset dir="${srcDir}" id="phpFiles">
-		<include name="**/*.php" />
-	</fileset>
+    <fileset dir="${srcDir}" id="phpFiles">
+        <include name="**/*.php"/>
+    </fileset>
 
-	<fileset dir="${srcDir}" id="main">
-		<include name="main/**/*.php" />
-	</fileset>
+    <fileset dir="${srcDir}" id="main">
+        <include name="main/**/*.php"/>
+    </fileset>
 
-	<fileset dir="${srcDir}" id="devel">
-		<include name="test/**/*.php" />
-	</fileset>
+    <fileset dir="${srcDir}" id="devel">
+        <include name="test/**/*.php"/>
+    </fileset>
 
-	<!-- Targets -->
-	<target name="report"
-		description="Report on code quality"
-	>
-		<mkdir dir="${reportsDir}" />
+    <!-- Targets -->
+    <target name="report"
+            description="Report on code quality"
+            >
+        <mkdir dir="${reportsDir}"/>
 
-		<!--
-                <phpcodesniffer
-                    standard="PSR2"
-                    format="full"
-                    docFile="${reportsDir}/codesniffer.log"
-                    allowedFileExtensions="php js css html"
+
+        <!-- Measure project size using PHPLOC -->
+        <phploc
+                reportType="txt"
+                reportDirectory="${reportsDir}"
+                reportName="phploc"
                 >
-                    <fileset refid="phpFiles" />
-                </phpcodesniffer>
-        -->
+            <fileset dir="${srcDir}">
+                <include name="**/*.php"/>
+            </fileset>
+        </phploc>
 
-		<!-- Measure project size using PHPLOC -->
-		<phploc
-            reportType="txt"
-            reportDirectory="${reportsDir}"
-            reportName="phploc"
-		>
-				<fileset dir="${srcDir}">
-					<include name="**/*.php" />
-				</fileset>
-		</phploc>
+        <!-- Calculate software metrics -->
+        <parallel>
+            <!-- Check for duplicate code -->
+            <phpcpd minLines="10" minTokens="20">
+                <fileset refid="phpFiles"/>
+                <formatter type="pmd" outfile="${reportsDir}/pmd-cpd.xml"/>
+            </phpcpd>
+        </parallel>
 
-		<!-- Calculate software metrics using PHP_Depend -->
-		<phpdepend>
-			<fileset refid="main" />
-			<logger type="jdepend-xml" outfile="${reportsDir}/phpdepend.xml"/>
-			<logger type="summary-xml" outfile="${reportsDir}/phpdepend-summary.xml"/>
-			<logger type="jdepend-chart" outfile="${reportsDir}/dependencies.svg"/>
-			<logger type="overview-pyramid" outfile="${reportsDir}/overview-pyramid.svg"/>
-		</phpdepend>
+        <!-- Aggregate tool output with PHP_CodeBrowser -->
+        <mkdir dir="${reportsDir}/cb"/>
+        <exec executable="src/php/lib/mayflower/php-codebrowser/bin/phpcb" logoutput="true" checkreturn="true"
+              level="debug">
+            <arg value="--log"/>
+            <arg path="${reportsDir}"/>
+            <arg value="--source"/>
+            <arg path="${srcDir}"/>
+            <arg value="--output"/>
+            <arg path="${reportsDir}/cb"/>
+        </exec>
+    </target>
 
-		<!-- Perform project mess detection using PHPMD -->
-		<phpmd rulesets="codesize,design,naming,unusedcode">
-			<fileset refid="phpFiles"/>
-			<formatter type="xml" outfile="${reportsDir}/pmd.xml"/>
-		</phpmd>
+    <target name="clean"
+            description="Prepare the build environment"
+            >
+        <!-- Ensure the build folder is clean -->
+        <delete dir="${buildDir}" quiet="true"/>
+        <!-- Ensure the build folder exists -->
+        <mkdir dir="${buildDir}"/>
+    </target>
 
-		<!-- Check for duplicate code -->
-		<phpcpd minLines="10" minTokens="20">
-			<fileset refid="phpFiles"/>
-			<formatter type="pmd" outfile="${reportsDir}/pmd-cpd.xml"/>
-		</phpcpd>
+    <target name="test"
+            description="Run unit tests"
+            depends="clean"
+            >
+        <phplint haltonfailure="true">
+            <fileset refid="main"/>
+            <fileset refid="devel"/>
+        </phplint>
 
-		<!-- Aggregate tool output with PHP_CodeBrowser -->
-		<mkdir dir="${reportsDir}/cb" />
-		<exec executable="src/php/lib/mayflower/php-codebrowser/bin/phpcb" logoutput="true" checkreturn="true" level="debug">
-			<arg value="- -log"/>
-			<arg path="${reportsDir}"/>
-			<arg value="- -source"/>
-			<arg path="${srcDir}"/>
-			<arg value="- -output"/>
-			<arg path="${reportsDir}/cb"/>
-		</exec>
-	</target>
+        <exec executable="src/php/lib/phpunit/phpunit/phpunit"
+              passthru="true"
+              checkreturn="true"
+                />
+    </target>
 
-	<target name="clean"
-		description="Prepare the build environment"
-	>
-		<!-- Ensure the build folder is clean -->
-		<delete dir="${buildDir}" quiet="true" />
-		<!-- Ensure the build folder exists -->
-		<mkdir dir="${buildDir}" />
-	</target>
+    <target name="quickbuild"
+            description="A quick build without tests or reports"
+            >
+        <phingcall target="_build"/>
+    </target>
 
-	<target name="test"
-		description="Run unit tests"
-		depends="clean"
-	>
-		<phplint haltonfailure="true">
-			<fileset refid="main" />
-			<fileset refid="devel" />
-		</phplint>
+    <!-- A full build -->
+    <target name="build"
+            description="A full build"
+            depends="test,report"
+            >
+        <phingcall target="_build"/>
+    </target>
 
-		<exec
-			executable="src/php/lib/phpunit/phpunit/phpunit"
-			passthru="true"
-			checkreturn="true"
-		/>
-		<!--
-		<phpunit
-			configuration="phpunit.xml"
-			pharlocation="src/php/lib/phpunit/phpunit/phpunit"
-		/>
-		-->
-	</target>
+    <target name="_build"
+            description="Package the contents of the library"
+            >
+        <composer
+                command="archive"
+                composer="/usr/local/bin/composer"
+                >
+            <arg value="--format=zip"/>
+            <arg value="--dir=build"/>
+        </composer>
+    </target>
 
-	<target name="quickbuild"
-			description="A quick build without tests or reports"
-	>
-		<phingcall target="_build"/>
-	</target>
-
-	<!-- A full build -->
-	<target name="build"
-			description="A full build"
-			depends="test,report"
-	>
-		<phingcall target="_build"/>
-	</target>
-
-	<target name="_build"
-		description="Package the contents of the library"
-	>
-		<composer
-				command="archive"
-				composer="/usr/local/bin/composer"
-		>
-			<arg value="--format=zip" />
-			<arg value="--dir=build" />
-		</composer>
-	</target>
-
-	<target name="publish"
-		description="Make the packages available in the repository"
-		depends="build"
-	>
-		<mkdir dir="${repository}" />
-		<echo>
-			Copying ${distFileName}.${distFileType} to ${repository}...
-		</echo>
-		<copy
-			todir="${repository}"
-			haltonerror="true"
-		>
-			<fileset dir="${buildDir}">
-				<include name="${distFileName}*.${distFileType}" />
-			</fileset>
-		</copy>
-		<echo>Done.</echo>
-	</target>
+    <target name="publish"
+            description="Make the packages available in the repository"
+            depends="build"
+            >
+        <mkdir dir="${repository}"/>
+        <echo>
+            Copying ${distFileName}.${distFileType} to ${repository}...
+        </echo>
+        <copy
+                todir="${repository}"
+                haltonerror="true"
+                >
+            <fileset dir="${buildDir}">
+                <include name="${distFileName}*.${distFileType}"/>
+            </fileset>
+        </copy>
+        <echo>Done.</echo>
+    </target>
 
 </project>
