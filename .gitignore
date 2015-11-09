@@ -1,5 +1,4 @@
 build
-composer.lock
-src/php/lib/*
+src/php/lib
 /nbproject
 .idea
