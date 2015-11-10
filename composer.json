@@ -41,7 +41,7 @@
   },
   "require-dev": {
     "phing/phing": "*",
-    "phpunit/phpunit": "*",
+    "phpunit/phpunit": "4.8",
     "phplint/phplint": "*",
     "phploc/phploc": "*",
     "sebastian/phpcpd": "*",
