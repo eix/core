@@ -37,7 +37,8 @@
     "php": ">=5.4",
     "ext-xsl": ">0",
     "ext-intl": ">0",
-    "ext-json": ">0"
+    "ext-json": ">0",
+    "ext-gettext": ">0"
   },
   "require-dev": {
     "phing/phing": "*",
