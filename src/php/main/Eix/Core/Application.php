@@ -116,13 +116,13 @@ abstract class Application
                 $this->setLocale($request->getLocale());
                 // Run the process of responding to the request.
                 $this->issueResponse($request);
-            } catch (\Exception $exception) {
+            } catch (\Throwable $throwable) {
                 // There was an error somewhere during the request
                 // creation, or somewhere during the response building
                 // process.
                 $errorRequest = new Requests\Http\Error;
-                $errorRequest->setException($exception);
-                $this->issueResponse($errorRequest, $exception);
+                $errorRequest->setThrowable($throwable);
+                $this->issueResponse($errorRequest, $throwable);
             }
         } catch (\Exception $exception) {
             // There was an error while trying to fail gracefully.
@@ -192,19 +192,19 @@ abstract class Application
 
     /**
      * Stops the application and outputs an error.
-     * @param Exception $exception the error that caused the application to
+     * @param Throwable $throwable the error that caused the application to
      * stop.
      */
-    public function fail(\Exception $exception)
+    public function fail(\Throwable $throwable)
     {
-        Logger::get()->exception($exception);
+        Logger::get()->exception($throwable);
         header('Server error', true, 500);
         echo '<h1>Eix</h1>';
         echo 'The application cannot continue.';
-        echo '<blockquote>' . $exception->getMessage() . '</blockquote>';
+        echo '<blockquote>' . $throwable->getMessage() . '</blockquote>';
 
         if (defined('DEBUG') && DEBUG) {
-            echo '<pre>' . $exception->getTraceAsString() . '</pre>';
+            echo '<pre>' . $throwable->getTraceAsString() . '</pre>';
         }
 
         die(-1);
@@ -249,20 +249,20 @@ abstract class Application
      * There is HTML here in the event the templating system has failed as well
      * (which is usually why the error is not properly shown).
      */
-    public function handleException($exception)
+    public function handleException(\Throwable $throwable)
     {
         // Captured an application-level exception.
         try {
             // Log the exception.
-            Logger::get()->exception($exception);
+            Logger::get()->exception($throwable);
             // Try to display a user-friendly message.
             $responder = new Responders\Http\Error;
-            $responder->setException($exception);
+            $responder->setThrowable($throwable);
             $responder->getResponse()->issue();
             // Stop the application, as it did not handle the exception
             // properly.
             die(-1);
-        } catch (Exception $innerException) {
+        } catch (\Exception $innerException) {
             $this->fail($innerException);
         }
     }

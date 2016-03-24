@@ -10,27 +10,27 @@ use Eix\Core\Requests\Exception;
 
 class ErrorTest extends \PHPUnit_Framework_TestCase
 {
-    private $exception;
+    private $throwable;
 
     protected function setUp()
     {
-        $this->exception = new Exception('Test exception');
+        $this->throwable = new Exception('Test exception');
     }
 
     protected function tearDown()
     {
-        unset($this->exception);
+        unset($this->throwable);
     }
 
     public function testDefaultConstructor()
     {
         $request = new ErrorRequest;
 
-        $request->setException($this->exception);
+        $request->setThrowable($this->throwable);
 
         $this->assertEquals(
-            $request->getException(),
-            $this->exception
+            $request->getThrowable(),
+            $this->throwable
         );
     }
 

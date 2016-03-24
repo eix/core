@@ -12,36 +12,20 @@ use Eix\Core\Responders\Http\Error as ErrorResponder;
 
 class ErrorTest extends \PHPUnit_Framework_TestCase
 {
-    private $exception;
-
-    protected function setUp()
-    {
-        $this->exception = new Exception('Test exception');
-    }
-
-    protected function tearDown()
-    {
-        unset($this->exception);
-    }
-
+    /**
+     * @expectedException \InvalidArgumentException
+     */
     public function testDefaultConstructor()
     {
-        $responder = new ErrorResponder;
-        $responder->setException($this->exception);
-
-        $this->assertEquals(
-            $responder->getException(),
-            $this->exception
-        );
+        new ErrorResponder;
     }
 
     /**
-     * @expectedException \Eix\Core\Exception
+     * @expectedException \InvalidArgumentException
      */
     public function testConstructorWithNormalRequest()
     {
-        $request = new HttpRequest;
-        $responder = new ErrorResponder($request);
+        new ErrorResponder(new HttpRequest);
     }
 
     /**
@@ -49,20 +33,34 @@ class ErrorTest extends \PHPUnit_Framework_TestCase
      */
     public function testConstructorWithEmptyErrorRequest()
     {
-        $request = new ErrorRequest;
-        $responder = new ErrorResponder($request);
+        new ErrorResponder(new ErrorRequest);
     }
 
-    public function testConstructorWithErrorRequest()
+    public function testConstructorWithException()
     {
+        $exception = new Exception;
         $request = new ErrorRequest;
-        $request->setException(new \Exception('Test exception'));
+        $request->setThrowable(new \Exception('Test exception'));
         $responder = new ErrorResponder($request);
-        $responder->setException($this->exception);
+        $responder->setThrowable($exception);
 
         $this->assertEquals(
-            $responder->getException(),
-            $this->exception
+            $responder->getThrowable(),
+            $exception
+        );
+    }
+
+    public function testConstructorWithError()
+    {
+        $exception = new Exception;
+        $request = new ErrorRequest;
+        $request->setThrowable(new \Error('Test error'));
+        $responder = new ErrorResponder($request);
+        $responder->setThrowable($exception);
+
+        $this->assertEquals(
+            $responder->getThrowable(),
+            $exception
         );
     }
 

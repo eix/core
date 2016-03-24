@@ -80,15 +80,15 @@ class Factory
     /**
      * Returns a responder that deals with failed HTTP requests.
      *
-     * @param \Exception  $exception the exception the request has caused.
+     * @param \Throwable  $throwable the error the request has caused.
      * @param HttpRequest $request   the request that has not been
      * satisfied.
      */
-    private static function getHttpErrorResponder(\Exception $exception, HttpRequest $request = null)
+    private static function getHttpErrorResponder(\Throwable $throwable, HttpRequest $request = null)
     {
         // If an error request has been made, oblige.
         $responder = new \Eix\Core\Responders\Http\Error($request);
-        $responder->setException($exception);
+        $responder->setThrowable($throwable);
 
         return $responder;
     }

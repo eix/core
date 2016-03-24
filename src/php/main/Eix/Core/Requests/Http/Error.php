@@ -7,8 +7,8 @@ namespace Eix\Core\Requests\Http;
  */
 class Error extends \Eix\Core\Requests\Http
 {
-    // The exception that describes the error situation.
-    private $exception;
+    // The object that describes the error situation.
+    private $throwable;
 
     /**
      * Builds a request that describes an error condition, to be used when a
@@ -25,13 +25,13 @@ class Error extends \Eix\Core\Requests\Http
         $this->uri = false;
     }
 
-    public function setException($exception)
+    public function setThrowable(\Throwable $throwable)
     {
-        $this->exception = $exception;
+        $this->throwable = $throwable;
     }
 
-    public function getException()
+    public function getThrowable()
     {
-        return $this->exception;
+        return $this->throwable;
     }
 }

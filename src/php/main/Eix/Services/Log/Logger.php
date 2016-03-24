@@ -21,6 +21,7 @@ class Logger
         LOG_DEBUG => 'debug',
     );
     private $id;
+    private $isEnabled = true;
     private static $instance;
 
     /** Cache the error_log location to avoid retrieving it on each log call. */
@@ -36,7 +37,21 @@ class Logger
      */
     public function __construct($id)
     {
+        // Disable errors during testing.
+        // TODO: Fix this, there shouldn't be a dependency on EIX_ENV here.
+        if ($_ENV["EIX_ENV"] == "test") {
+            $this->disable();
+        }
+
         $this->id = $id;
+    }
+
+    public function enable() {
+        $this->isEnabled = true;
+    }
+
+    public function disable() {
+        $this->isEnabled = false;
     }
 
     /**
@@ -64,17 +79,12 @@ class Logger
      */
     private function log($message, $level)
     {
-        if ($level <= $this->level) {
-            if (empty($this->errorLogFile)) {
-                // The default log file is named after the application, and
-                // lives in the directory specified in the error_log setting. If
-                // the latter is empty, the temporary folder is used.
-                $this->errorLogFile = sprintf('%s/%s.log',
-                    dirname(ini_get('error_log')) ?: sys_get_temp_dir(),
-                    $this->id
-                );
-            }
+        // Only log if the logger is enabled.
+        if (!$this->isEnabled) {
+            return;
+        }
 
+        if ($level <= $this->level) {
             $requestId = null;
             try {
                 $requestID = Application::getCurrent()->getRequestId();
@@ -83,34 +93,40 @@ class Logger
             }
 
             $logMessage = sprintf(
-                '%s %s [%s] %s' . PHP_EOL,
-                date('Ymd H:i:s:u', microtime(true)),
+                '%s: %s [%s] %s' . PHP_EOL,
+                $this->id,
                 $requestId ?: '———',
                 @self::$levelNames[$level],
                 $message
             );
 
-            // Silence the eventual error if the message cannot be written
-            // to the log, so that it doesn't interrupt the program.
-            @file_put_contents(
-                $this->errorLogFile,
-                $logMessage,
-                FILE_APPEND
-            );
+            // Commit the log message.
+            if (empty($this->errorLogFile)) {
+                // If no log file is specified, use the default PHP location.
+                error_log($logMessage);
+            } else {
+                // Silence the eventual error if the message cannot be written
+                // to the log, so that it doesn't interrupt the program.
+                @file_put_contents(
+                    $this->errorLogFile,
+                    $logMessage,
+                    FILE_APPEND
+                );
+            }
         }
     }
 
     /*
      * Convenience shorthands.
      */
-    public function exception(\Exception $exception)
+    public function exception(\Throwable $throwable)
     {
         try {
             if (@Application::getSettings()->logging->exceptions) {
-                $this->error('[EXCEPTION] ' . $exception . PHP_EOL . $exception->getTraceAsString());
+                $this->error('[EXCEPTION] ' . $throwable . PHP_EOL . $throwable->getTraceAsString());
             }
-        } catch (SettingsException $exception) {
-            // No setting present, exception will not be logged.
+        } catch (SettingsException $throwable) {
+            // No setting present, throwable will not be logged.
         }
     }
 

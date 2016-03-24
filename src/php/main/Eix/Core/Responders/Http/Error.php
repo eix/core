@@ -5,31 +5,42 @@ namespace Eix\Core\Responders\Http;
 use Eix\Core\Exception;
 use Eix\Core\Responders\Http as HttpResponder;
 use Eix\Services\Log\Logger;
+use Eix\Core\Requests\Http\Error as ErrorRequest;
 
 /**
  * Implements a responder that outputs error information in JSON.
  */
 class Error extends HttpResponder
 {
-    private $exception;
+    /**
+     * @var \Throwable
+     */
+    private $throwable;
 
     public function __construct($request = null)
     {
+        if (!($request instanceof ErrorRequest)) {
+            throw new \InvalidArgumentException(sprintf(
+                "An error request is required for error responders: %s",
+                get_class($request)
+            ));
+        }
+
         parent::__construct($request);
 
         if ($request) {
-            $exception = @$request->getException();
-            if ($exception) {
-                $this->setException($exception);
+            $throwable = @$request->getThrowable();
+            if ($throwable) {
+                $this->setThrowable($throwable);
                 Logger::get()->debug(sprintf(
                     'Error controller called because %s [%d].%s%s',
-                    lcfirst($exception->getMessage()),
-                    $exception->getCode(),
+                    lcfirst($throwable->getMessage()),
+                    $throwable->getCode(),
                     PHP_EOL,
-                    $exception->getTraceAsString()
+                    $throwable->getTraceAsString()
                 ));
             } else {
-                throw new Exception('The request does not carry an exception.');
+                throw new Exception('The request does not carry an error or an exception.');
             }
         }
     }
@@ -40,21 +51,21 @@ class Error extends HttpResponder
 
     protected function httpGetForJson()
     {
-        return $this->buildResponse('\Eix\Core\Responses\Http\Json');
+        return $this->buildResponse(\Eix\Core\Responses\Http\Json::class);
     }
 
     protected function httpGetForXml()
     {
-        return $this->buildResponse('\Eix\Core\Responses\Http\Xml');
+        return $this->buildResponse(\Eix\Core\Responses\Http\Xml::class);
     }
 
     protected function httpGetForHtml()
     {
-        $response = $this->buildResponse('\Eix\Core\Responses\Http\Html');
+        $response = $this->buildResponse(\Eix\Core\Responses\Http\Html::class);
 
-        // The template is set according to the nature of the exception.
+        // The template is set according to the nature of the throwable object.
         $page = null;
-        $code = $this->getException()->getCode();
+        $code = $this->getThrowable()->getCode();
         switch ($code) {
             case 404:
                 $page = 'not_found';
@@ -76,28 +87,24 @@ class Error extends HttpResponder
 
     private function buildResponse($className)
     {
-        $exception = $this->getException();
-        $code = $exception->getCode();
+        $throwable = $this->getThrowable();
+        $code = $throwable->getCode();
         $response = new $className($this->getRequest());
         $response->setData('error', array(
             'code' => $code,
-            'message' => $exception->getMessage()
+            'message' => $throwable->getMessage()
         ));
 
         return $response;
     }
 
-    public function setException($exception)
+    public function setThrowable(\Throwable $throwable)
     {
-        $this->exception = $exception;
+        $this->throwable = $throwable;
     }
 
-    public function getException()
+    public function getThrowable()
     {
-        if (!($this->exception) instanceof \Exception) {
-            throw new \RuntimeException('This responder needs an exception.');
-        }
-
-        return $this->exception;
+        return $this->throwable;
     }
 }
