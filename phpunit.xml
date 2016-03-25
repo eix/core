@@ -29,7 +29,7 @@
 
     <filter>
         <whitelist processUncoveredFilesFromWhitelist="true">
-            <directory suffix="Test.php">src/php/test</directory>
+            <directory suffix=".php">src/php/main</directory>
         </whitelist>
     </filter>
 
