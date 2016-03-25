@@ -3,7 +3,7 @@ sudo: false
 language: php
 
 php:
-  - 5.4
+  - 7
 
 env:
   - EIX_ENV=TEST
