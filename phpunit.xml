@@ -27,6 +27,12 @@
         </testsuite>
     </testsuites>
 
+    <filter>
+        <whitelist processUncoveredFilesFromWhitelist="true">
+            <directory suffix="Test.php">src/php/test</directory>
+        </whitelist>
+    </filter>
+
     <logging>
         <log
                 type="coverage-text"
