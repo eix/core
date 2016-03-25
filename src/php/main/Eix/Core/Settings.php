@@ -12,6 +12,9 @@ class Settings
 
     private $settings;
     private static $environment;
+    const ENV = 'EIX_ENV';
+    const ENV_PRODUCTION = 'pro';
+    const ENV_TEST = 'test';
 
     /**
      * Builds a settings object.
@@ -24,7 +27,7 @@ class Settings
     {
         // Parse the settings source.
         if (empty($source)) {
-            // No source specified, load from the default location.
+            // No source specified. Pick up settings from the default location.
             $this->loadFromLocation(self::DEFAULT_SETTINGS_LOCATION);
         } elseif (is_array($source)) {
             // Source is an array, convert to object.
@@ -56,42 +59,48 @@ class Settings
         }
         $settingsLocation = $location . 'settings.json';
 
-        if (is_readable($settingsLocation)) {
-            // Load the settings.
-            $settings = json_decode(file_get_contents($settingsLocation), true);
-            if (empty($settings)) {
-                throw new Settings\Exception('Settings file cannot be parsed.');
-            } else {
-                // Load settings customised for the current environment.
-                $environmentSettings = null;
-                $environment = self::getEnvironment();
-                if ($environment) {
-                    $environmentSettingsLocation = sprintf(
-                        '%ssettings-%s.json',
-                        $location,
-                        strtolower($environment)
-                    );
-                    if (is_readable($environmentSettingsLocation)) {
-                        $environmentSettings = json_decode(file_get_contents($environmentSettingsLocation), true);
-                        if (!empty($environmentSettings)) {
-                            $settings = self::mergeSettings($settings, $environmentSettings);
-                        }
-                    }
-                }
-
-                $this->settings = self::objectify($settings);
-            }
-        } else {
+        if (!is_readable($settingsLocation)) {
             Logger::get()->error(
-                'Application settings not found in %s.',
+                'Settings file %s cannot be read.',
                 $settingsLocation
             );
-            throw new Settings\Exception('No settings have been found.');
+            throw new Settings\Exception("Settings file $settingsLocation is unavailable.");
         }
+
+        // Load the settings.
+        $settings = json_decode(file_get_contents($settingsLocation), true);
+        if (empty($settings)) {
+            throw new Settings\Exception('Settings file cannot be parsed.');
+        }
+
+        // Load settings customised for the current environment.
+        $environmentSettings = null;
+        $environment = self::getEnvironment();
+        if ($environment) {
+            $environmentSettingsLocation = sprintf(
+                '%ssettings-%s.json',
+                $location,
+                strtolower($environment)
+            );
+
+            if (is_readable($environmentSettingsLocation)) {
+                $environmentSettings = json_decode(file_get_contents($environmentSettingsLocation), true);
+                if (!empty($environmentSettings)) {
+                    $settings = self::mergeSettings($settings, $environmentSettings);
+                }
+            }
+        }
+
+        $this->settings = self::objectify($settings);
+
     }
 
-    public function get($key, $default = null, $failOnMissing = false)
-    {
+    public
+    function get(
+        $key,
+        $default = null,
+        $failOnMissing = false
+    ) {
         if (isset($this->settings->$key)) {
             return $this->settings->$key;
         } else {
@@ -108,8 +117,11 @@ class Settings
      * @param string $key the setting key
      * @param mixed $value the setting value
      */
-    public function __set($key, $value)
-    {
+    public
+    function __set(
+        $key,
+        $value
+    ) {
         $this->settings->$key = $value;
     }
 
@@ -124,8 +136,10 @@ class Settings
      * @return mixed the setting value
      * @throws Settings\Exception
      */
-    public function __get($settingId)
-    {
+    public
+    function __get(
+        $settingId
+    ) {
         return $this->get($settingId, null, true);
     }
 
@@ -134,8 +148,10 @@ class Settings
      * @param array $array the array to convert
      * @return object the converted array
      */
-    private static function objectify(array $array)
-    {
+    private
+    static function objectify(
+        array $array
+    ) {
         foreach ($array as &$item) {
             if (is_array($item)) {
                 $item = self::objectify($item);
@@ -150,8 +166,10 @@ class Settings
      *
      * @param string $environment the new environment.
      */
-    public static function setEnvironment($environment)
-    {
+    public
+    static function setEnvironment(
+        $environment
+    ) {
         self::$environment = $environment;
     }
 
@@ -160,16 +178,17 @@ class Settings
      *
      * @return string the current environment.
      */
-    public static function getEnvironment()
+    public
+    static function getEnvironment()
     {
         if (empty(self::$environment)) {
-            self::$environment = getenv('EIX_ENV')
-                ?: @$_SERVER['EIX_ENV']
-                    ?: @$_ENV['EIX_ENV'];
+            self::$environment = getenv(self::ENV)
+                ?: @$_SERVER[self::ENV]
+                    ?: @$_ENV[self::ENV];
 
             // If the environment cannot be inferred, assume production.
             if (empty(self::$environment)) {
-                self::$environment = 'pro';
+                self::$environment = self::ENV_PRODUCTION;
             }
         }
 
@@ -184,8 +203,11 @@ class Settings
      * @param array $environmentSettings the overwriting array
      * @return array the merged settings.
      */
-    public static function mergeSettings($generalSettings, $environmentSettings)
-    {
+    public
+    static function mergeSettings(
+        $generalSettings,
+        $environmentSettings
+    ) {
         $mergedSettings = $generalSettings;
 
         foreach ($environmentSettings as $key => &$value) {
@@ -196,7 +218,7 @@ class Settings
             ) {
                 $mergedSettings[$key] = self::mergeSettings($mergedSettings[$key], $value);
             } else {
-                $mergedSettings [$key] = $value;
+                $mergedSettings[$key] = $value;
             }
         }
 
