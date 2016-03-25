@@ -18,8 +18,8 @@ class Dom
     /**
      * Creates a new Dom document.
      *
-     * @param  type          $source   A file location or an XML string.
-     * @param  type          $encoding the encoding of the resulting document.
+     * @param  type $source A file location or an XML string.
+     * @param  type $encoding the encoding of the resulting document.
      * @throws Dom\Exception
      */
     public function __construct($source = null, $encoding = "UTF-8")
@@ -53,7 +53,8 @@ class Dom
                                 if ($this->domDocument->load($this->fileName)) {
                                     $this->logger->debug('Loaded XML document at ' . $this->fileName);
                                 } else {
-                                    throw new Dom\Exception("dom-cannot-load-document-bad-file", array($this->fileName, "code" => 404));
+                                    throw new Dom\Exception("dom-cannot-load-document-bad-file",
+                                        array($this->fileName, "code" => 404));
                                 }
                             } catch (DOMException $exception) {
                                 $this->logger->error($exception->getMessage());
@@ -96,7 +97,7 @@ class Dom
 
     /**
      * Merge the data and the XML template into an HTML page.
-     * @param  type          $xslDocument the template.
+     * @param  type $xslDocument the template.
      * @return type
      * @throws Dom\Exception
      */
@@ -207,7 +208,7 @@ class Dom
 
         // Remove the namespace from the properties' names.
         if ($nodeName{0} == "\x00") {
-            $nodeName = substr($nodeName, strpos($nodeName, "\x0",1) + 1);
+            $nodeName = substr($nodeName, strpos($nodeName, "\x0", 1) + 1);
         }
 
         // Add the content.
@@ -235,7 +236,7 @@ class Dom
             $parentNode = $this->addNode($parentNode, $containerTag);
         }
 
-        foreach ((array) $source as $key => $value) {
+        foreach ((array)$source as $key => $value) {
             $newNode = $this->addNodeWithContent($parentNode, $key, $value);
         }
 
@@ -432,8 +433,8 @@ class Dom
 
         if ($node) {
             return $node->hasAttribute($name) ?
-                    $node->getAttribute($name) :
-                    null;
+                $node->getAttribute($name) :
+                null;
         } else {
             return null;
         }
@@ -472,8 +473,7 @@ class Dom
         // Get the XML in a string.
         $xmlString = $isXML
             ? $this->domDocument->saveXML()
-            : $this->domDocument->saveHTML()
-        ;
+            : $this->domDocument->saveHTML();
         // Restore the output formatting value.
         $this->domDocument->formatOutput = $formatOutput;
 
