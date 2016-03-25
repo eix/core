@@ -52,18 +52,6 @@
                 <formatter type="pmd" outfile="${reportsDir}/pmd-cpd.xml"/>
             </phpcpd>
         </parallel>
-
-        <!-- Aggregate tool output with PHP_CodeBrowser -->
-        <mkdir dir="${reportsDir}/cb"/>
-        <exec executable="src/php/lib/mayflower/php-codebrowser/bin/phpcb" logoutput="true" checkreturn="true"
-              level="debug">
-            <arg value="--log"/>
-            <arg path="${reportsDir}"/>
-            <arg value="--source"/>
-            <arg path="${srcDir}"/>
-            <arg value="--output"/>
-            <arg path="${reportsDir}/cb"/>
-        </exec>
     </target>
 
     <target name="clean"
